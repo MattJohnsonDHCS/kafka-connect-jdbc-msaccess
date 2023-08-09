@@ -15,6 +15,7 @@
 
 package io.confluent.connect.jdbc;
 
+import io.confluent.connect.jdbc.source.DirectoryWatcher;
 import org.apache.kafka.common.config.Config;
 import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.common.config.ConfigException;
@@ -26,6 +27,8 @@ import org.apache.kafka.connect.util.ConnectorUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
+import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,21 +48,32 @@ import io.confluent.connect.jdbc.util.ExpressionBuilder;
 import io.confluent.connect.jdbc.util.TableId;
 import io.confluent.connect.jdbc.util.Version;
 
-/**
- * JdbcConnector is a Kafka Connect Connector implementation that watches a JDBC database and
- * generates tasks to ingest database contents.
- */
-public class JdbcSourceConnector extends SourceConnector {
+import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG;
+import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.CONNECTOR_NAME;
+import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.MODE_BULK;
+import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.MODE_CONFIG;
+import static java.util.Objects.nonNull;
 
-  private static final Logger log = LoggerFactory.getLogger(JdbcSourceConnector.class);
+/**
+ * MSAccess Jdbc Source Connector is a Kafka Connect Connector implementation
+ * that watches a file system for new .accdb files and generates tasks to ingest database contents 
+ * via JDBC.
+ */
+public class MSAccessJdbcSourceConnector extends SourceConnector {
+
+  private static final Logger log = LoggerFactory.getLogger(MSAccessJdbcSourceConnector.class);
 
   private static final long MAX_TIMEOUT = 10000L;
-
+  public static final String DIR_PATH = "directory.path";
+  public static final String JDBC_URL_PREFIX = "jdbc:ucanaccess://";
+  public static final String CONNECTOR_NAME_PREFIX = "MSAccess_Connector_";
+  private String accessFileDirectory;
   private Map<String, String> configProperties;
   private JdbcSourceConnectorConfig config;
   private CachedConnectionProvider cachedConnectionProvider;
   private TableMonitorThread tableMonitorThread;
   private DatabaseDialect dialect;
+  protected DirectoryWatcher watcher;
 
   @Override
   public String version() {
@@ -68,68 +82,105 @@ public class JdbcSourceConnector extends SourceConnector {
 
   @Override
   public void start(Map<String, String> properties) throws ConnectException {
-    log.info("Starting JDBC Source Connector");
-    try {
-      configProperties = properties;
-      config = new JdbcSourceConnectorConfig(configProperties);
-    } catch (ConfigException e) {
-      throw new ConnectException("Couldn't start JdbcSourceConnector due to configuration error",
-                                 e);
+    log.info("Starting MSAccess JDBC Source Connector");
+    configProperties = properties;
+    accessFileDirectory = properties.get(DIR_PATH);
+    if (accessFileDirectory == null || accessFileDirectory.isEmpty()) {
+      throw new ConfigException("missing directory.path");
     }
 
-    final String dbUrl = config.getString(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG);
+    if (watcher == null) {
+      watcher = new DirectoryWatcher(accessFileDirectory);
+      watcher.run();
+    }
+
+    if (!watcher.getQueuedFiles().isEmpty()) {
+      File file = watcher.getQueuedFiles().poll();
+      processFile(file);
+    } else {
+      start(properties);
+    }
+  }
+
+  private void processFile(File file) {
+    if (nonNull(file)) {
+      configProperties.put(CONNECTION_URL_CONFIG, JDBC_URL_PREFIX + file.getAbsolutePath());
+      configProperties.put(CONNECTOR_NAME, CONNECTOR_NAME_PREFIX + file.getName().substring(0,
+              file.getName().lastIndexOf('.')));
+      configProperties.put(MODE_CONFIG, MODE_BULK);
+
+      configureConnector();
+      //TODO:Need to figure out the best way to monitor when connection has been closed to
+      // shut down connector/tablemonitor and call start()
+      Connection connection = getDbConnection();
+
+      long tablePollMs = config.getLong(JdbcSourceConnectorConfig.TABLE_POLL_INTERVAL_MS_CONFIG);
+      long tableStartupLimitMs =
+              config.getLong(JdbcSourceConnectorConfig
+                      .TABLE_MONITORING_STARTUP_POLLING_LIMIT_MS_CONFIG);
+      List<String> whitelist = config.getList(JdbcSourceConnectorConfig.TABLE_WHITELIST_CONFIG);
+      Set<String> whitelistSet = whitelist.isEmpty() ? null : new HashSet<>(whitelist);
+      List<String> blacklist = config.getList(JdbcSourceConnectorConfig.TABLE_BLACKLIST_CONFIG);
+      Set<String> blacklistSet = blacklist.isEmpty() ? null : new HashSet<>(blacklist);
+
+      if (whitelistSet != null && blacklistSet != null) {
+        throw new ConnectException(JdbcSourceConnectorConfig.TABLE_WHITELIST_CONFIG + " and "
+                + JdbcSourceConnectorConfig.TABLE_BLACKLIST_CONFIG + " are "
+                + "exclusive.");
+      }
+      String query = config.getString(JdbcSourceConnectorConfig.QUERY_CONFIG);
+      if (!query.isEmpty()) {
+        if (whitelistSet != null || blacklistSet != null) {
+          throw new ConnectException(JdbcSourceConnectorConfig.QUERY_CONFIG + " may not be combined"
+                  + " with whole-table copying settings.");
+        }
+        // Force filtering out the entire set of tables since the one task we'll generate is for the
+        // query.
+        whitelistSet = Collections.emptySet();
+
+      }
+      tableMonitorThread = new TableMonitorThread(
+              dialect,
+              cachedConnectionProvider,
+              context,
+              tableStartupLimitMs,
+              tablePollMs,
+              whitelistSet,
+              blacklistSet,
+              Time.SYSTEM
+      );
+      if (query.isEmpty()) {
+        tableMonitorThread.start();
+      }
+    }
+  }
+
+  private Connection getDbConnection() {
+    final String dbUrl = config.getString(CONNECTION_URL_CONFIG);
     final int maxConnectionAttempts = config.getInt(
-        JdbcSourceConnectorConfig.CONNECTION_ATTEMPTS_CONFIG
+            JdbcSourceConnectorConfig.CONNECTION_ATTEMPTS_CONFIG
     );
     final long connectionRetryBackoff = config.getLong(
-        JdbcSourceConnectorConfig.CONNECTION_BACKOFF_CONFIG
+            JdbcSourceConnectorConfig.CONNECTION_BACKOFF_CONFIG
     );
     dialect = DatabaseDialects.findBestFor(
-        dbUrl,
-        config
+            dbUrl,
+            config
     );
     cachedConnectionProvider = connectionProvider(maxConnectionAttempts, connectionRetryBackoff);
 
     // Initial connection attempt
     log.info("Initial connection attempt with the database.");
-    cachedConnectionProvider.getConnection();
+    return cachedConnectionProvider.getConnection();
+  }
 
-    long tablePollMs = config.getLong(JdbcSourceConnectorConfig.TABLE_POLL_INTERVAL_MS_CONFIG);
-    long tableStartupLimitMs =
-        config.getLong(JdbcSourceConnectorConfig.TABLE_MONITORING_STARTUP_POLLING_LIMIT_MS_CONFIG);
-    List<String> whitelist = config.getList(JdbcSourceConnectorConfig.TABLE_WHITELIST_CONFIG);
-    Set<String> whitelistSet = whitelist.isEmpty() ? null : new HashSet<>(whitelist);
-    List<String> blacklist = config.getList(JdbcSourceConnectorConfig.TABLE_BLACKLIST_CONFIG);
-    Set<String> blacklistSet = blacklist.isEmpty() ? null : new HashSet<>(blacklist);
+  private void configureConnector() {
+    try {
+      config = new JdbcSourceConnectorConfig(configProperties);
 
-    if (whitelistSet != null && blacklistSet != null) {
-      throw new ConnectException(JdbcSourceConnectorConfig.TABLE_WHITELIST_CONFIG + " and "
-                                 + JdbcSourceConnectorConfig.TABLE_BLACKLIST_CONFIG + " are "
-                                 + "exclusive.");
-    }
-    String query = config.getString(JdbcSourceConnectorConfig.QUERY_CONFIG);
-    if (!query.isEmpty()) {
-      if (whitelistSet != null || blacklistSet != null) {
-        throw new ConnectException(JdbcSourceConnectorConfig.QUERY_CONFIG + " may not be combined"
-                                   + " with whole-table copying settings.");
-      }
-      // Force filtering out the entire set of tables since the one task we'll generate is for the
-      // query.
-      whitelistSet = Collections.emptySet();
-
-    }
-    tableMonitorThread = new TableMonitorThread(
-        dialect,
-        cachedConnectionProvider,
-        context,
-        tableStartupLimitMs,
-        tablePollMs,
-        whitelistSet,
-        blacklistSet,
-        Time.SYSTEM
-    );
-    if (query.isEmpty()) {
-      tableMonitorThread.start();
+    } catch (ConfigException e) {
+      throw new ConnectException("Couldn't start JdbcSourceConnector due to configuration error",
+              e);
     }
   }
 
@@ -159,6 +210,7 @@ public class JdbcSourceConnector extends SourceConnector {
       Map<String, String> taskProps = new HashMap<>(configProperties);
       taskProps.put(JdbcSourceTaskConfig.TABLES_CONFIG, "");
       taskProps.put(JdbcSourceTaskConfig.TABLES_FETCHED, "true");
+      taskProps.put(DIR_PATH, accessFileDirectory);
       taskConfigs = Collections.singletonList(taskProps);
       log.trace("Producing task configs with custom query");
       return taskConfigs;
@@ -168,6 +220,7 @@ public class JdbcSourceConnector extends SourceConnector {
         taskConfigs = new ArrayList<>(1);
         Map<String, String> taskProps = new HashMap<>(configProperties);
         taskProps.put(JdbcSourceTaskConfig.TABLES_CONFIG, "");
+        taskProps.put(DIR_PATH, accessFileDirectory);
         if (currentTables == null) {
           /*
           currentTables is only null when the connector is starting up/restarting. In this case we
@@ -195,6 +248,7 @@ public class JdbcSourceConnector extends SourceConnector {
           builder.appendList().delimitedBy(",").of(taskTables);
           taskProps.put(JdbcSourceTaskConfig.TABLES_CONFIG, builder.toString());
           taskProps.put(JdbcSourceTaskConfig.TABLES_FETCHED, "true");
+          taskProps.put(DIR_PATH, accessFileDirectory);
           taskConfigs.add(taskProps);
         }
         log.trace(

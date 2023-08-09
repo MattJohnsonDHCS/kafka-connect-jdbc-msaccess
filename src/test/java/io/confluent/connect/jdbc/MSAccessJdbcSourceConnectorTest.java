@@ -55,18 +55,18 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({JdbcSourceConnector.class, DatabaseDialect.class})
+@PrepareForTest({MSAccessJdbcSourceConnector.class, DatabaseDialect.class})
 @PowerMockIgnore("javax.management.*")
-public class JdbcSourceConnectorTest {
+public class MSAccessJdbcSourceConnectorTest {
 
-  private JdbcSourceConnector connector;
+  private MSAccessJdbcSourceConnector connector;
   private EmbeddedDerby db;
   private Map<String, String> props;
 
-  public static class MockJdbcSourceConnector extends JdbcSourceConnector {
+  public static class MockMSAccessJdbcSourceConnector extends MSAccessJdbcSourceConnector {
     CachedConnectionProvider provider;
-    public MockJdbcSourceConnector() {}
-    public MockJdbcSourceConnector(CachedConnectionProvider provider) {
+    public MockMSAccessJdbcSourceConnector() {}
+    public MockMSAccessJdbcSourceConnector(CachedConnectionProvider provider) {
       this.provider = provider;
     }
     @Override
@@ -85,7 +85,7 @@ public class JdbcSourceConnectorTest {
 
   @Before
   public void setup() {
-    connector = new JdbcSourceConnector();
+    connector = new MSAccessJdbcSourceConnector();
     db = new EmbeddedDerby();
     props = new HashMap<>();
     props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
@@ -127,7 +127,7 @@ public class JdbcSourceConnectorTest {
   @Test
   public void testStartStop() throws Exception {
     CachedConnectionProvider mockCachedConnectionProvider = PowerMock.createMock(CachedConnectionProvider.class);
-    connector  = new MockJdbcSourceConnector(mockCachedConnectionProvider);
+    connector  = new MockMSAccessJdbcSourceConnector(mockCachedConnectionProvider);
     // Should request a connection, then should close it on stop(). The background thread may also
     // request connections any time it performs updates.
     Connection conn = PowerMock.createMock(Connection.class);

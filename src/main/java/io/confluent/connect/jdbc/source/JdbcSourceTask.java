@@ -17,6 +17,7 @@ package io.confluent.connect.jdbc.source;
 
 import java.sql.SQLNonTransientException;
 import java.util.TimeZone;
+
 import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.common.utils.SystemTime;
 import org.apache.kafka.common.utils.Time;
@@ -456,6 +457,7 @@ public class JdbcSourceTask extends SourceTask {
               >= CONSECUTIVE_EMPTY_RESULTS_BEFORE_RETURN) {
             log.trace("More than " + CONSECUTIVE_EMPTY_RESULTS_BEFORE_RETURN
                 + " consecutive empty results for all queriers, returning");
+            shutdown();
             return null;
           } else {
             continue;

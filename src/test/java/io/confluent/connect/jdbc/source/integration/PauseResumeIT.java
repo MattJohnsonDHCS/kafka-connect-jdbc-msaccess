@@ -27,7 +27,7 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import io.confluent.common.utils.IntegrationTest;
-import io.confluent.connect.jdbc.JdbcSourceConnector;
+import io.confluent.connect.jdbc.MSAccessJdbcSourceConnector;
 import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
 import io.confluent.connect.jdbc.source.JdbcSourceTaskConfig;
 
@@ -52,7 +52,7 @@ public class PauseResumeIT {
   @Before
   public void before() throws Exception {
     props = new HashMap<>();
-    props.put(ConnectorConfig.CONNECTOR_CLASS_CONFIG, JdbcSourceConnector.class.getName());
+    props.put(ConnectorConfig.CONNECTOR_CLASS_CONFIG, MSAccessJdbcSourceConnector.class.getName());
     props.put(TASKS_MAX_CONFIG, "1");
     props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, dbRule.getURL());
     props.put(JdbcSourceConnectorConfig.CONNECTION_USER_CONFIG, "root");

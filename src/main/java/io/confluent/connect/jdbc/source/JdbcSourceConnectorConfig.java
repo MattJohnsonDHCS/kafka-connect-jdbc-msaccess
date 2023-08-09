@@ -61,6 +61,7 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
   private static final Logger LOG = LoggerFactory.getLogger(JdbcSourceConnectorConfig.class);
   private static Pattern INVALID_CHARS = Pattern.compile("[^a-zA-Z0-9._-]");
 
+  public static final String CONNECTOR_NAME = "name";
   public static final String CONNECTION_PREFIX = "connection.";
 
   public static final String CONNECTION_URL_CONFIG = CONNECTION_PREFIX + "url";
