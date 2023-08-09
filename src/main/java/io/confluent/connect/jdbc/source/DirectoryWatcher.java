@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * defined directory. Every detected file is put into a queue waiting
  * to be sent to Kafka.
  */
-public class DirectoryWatcher extends TimerTask {
+public class DirectoryWatcher implements Runnable {
   private String path;
   private File[] filesArray;
   private HashMap dir = new HashMap();

@@ -88,15 +88,17 @@ public class MSAccessJdbcSourceConnector extends SourceConnector {
     if (accessFileDirectory == null || accessFileDirectory.isEmpty()) {
       throw new ConfigException("missing directory.path");
     }
-
+    //first run
     if (watcher == null) {
       watcher = new DirectoryWatcher(accessFileDirectory);
       watcher.run();
     }
 
+    //file(s) detected
     if (!watcher.getQueuedFiles().isEmpty()) {
       File file = watcher.getQueuedFiles().poll();
       processFile(file);
+      //TODO - alert when processing is finished and restart
     } else {
       start(properties);
     }
