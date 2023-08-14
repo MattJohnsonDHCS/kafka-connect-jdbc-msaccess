@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -106,11 +107,15 @@ public class JdbcSourceTask extends SourceTask {
     log.trace("Polling for new data");
     final List<SourceRecord> results = new ArrayList<>();
 
-    File directory =
-            new File(config.getString(JdbcSourceConnectorConfig.ACCESS_DIRECTORY_PATH_CONFIG));
-    File[] accessFiles = directory.listFiles((dir, name) -> name.toLowerCase().endsWith(".accdb"));
+    File sourceDirectory =
+            new File(config.getString(JdbcSourceConnectorConfig.ACCESS_DIRECTORY_UNPROCESSED_PATH_CONFIG));
+    List<File> accessFiles = Arrays.asList(sourceDirectory.listFiles((dir, name) -> name.toLowerCase().endsWith(".accdb")));
 
-    for (File file : accessFiles) {
+    File destinationDirectory =
+            new File(config.getString(JdbcSourceConnectorConfig.ACCESS_DIRECTORY_PROCESSED_PATH_CONFIG));
+
+    if(!accessFiles.isEmpty()) {
+      File file = accessFiles.get(0);
 
       List<String> tableList = new ArrayList<>();
 
@@ -205,6 +210,14 @@ public class JdbcSourceTask extends SourceTask {
           closeResources(connection, getFileNameWithoutExtension(file));
           throw t;
         }
+      }
+      log.info("File {} has finished processing. Attempting to move file to processed directory: {}", file.getName(),
+              destinationDirectory);
+
+      if(file.renameTo(new File(destinationDirectory,file.getName()))){
+        log.info("{} successfully moved to processed directory.",file.getName());
+      } else {
+        log.error("Error moving file: {} to processed directory.", file.getName());
       }
     }
     closeAllResources();

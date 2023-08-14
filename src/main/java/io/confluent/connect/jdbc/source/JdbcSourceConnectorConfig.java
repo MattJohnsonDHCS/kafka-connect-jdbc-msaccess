@@ -59,13 +59,22 @@ import org.slf4j.LoggerFactory;
 public class JdbcSourceConnectorConfig extends AbstractConfig {
 
   private static final Logger LOG = LoggerFactory.getLogger(JdbcSourceConnectorConfig.class);
-  public static final String ACCESS_DIRECTORY_PATH_CONFIG = "access.directory.path";
-  public static final String ACCESS_DIRECTORY_PATH_DOC =
+  public static final String ACCESS_DIRECTORY_UNPROCESSED_PATH_CONFIG = "access.directory.unprocessed.path";
+  public static final String ACCESS_DIRECTORY_UNPROCESSED_PATH_DOC =
           "File system directory where MSAcess DB files will be "
           + "placed for connector processing."
           + "(for example, ``access.directory.path: \"/Users/username/Documents/accessdbs\"``).";
-  public static final String ACCESS_DIRECTORY_PATH_DISPLAY = "Access Directory Path";
-  public static final String ACCESS_DIRECTORY_PATH_DEFAULT = "";
+  public static final String ACCESS_DIRECTORY_UNPROCESSED_PATH_DISPLAY = "Access Directory Unprocessed Path";
+  public static final String ACCESS_DIRECTORY_UNPROCESSED_PATH_DEFAULT = "";
+
+  public static final String ACCESS_DIRECTORY_PROCESSED_PATH_CONFIG = "access.directory.processed.path";
+  public static final String ACCESS_DIRECTORY_PROCESSED_PATH_DOC =
+          "File system directory where MSAcess DB files will be "
+                  + "moved after processing."
+                  + "(for example, ``access.directory.processed.path: " +
+                  "\"/Users/username/Documents/accessdbs/processed\"``).";
+  public static final String ACCESS_DIRECTORY_PROCESSED_PATH_DISPLAY = "Access Directory Processed Path";
+  public static final String ACCESS_DIRECTORY_PROCESSED_PATH_DEFAULT = "";
   private static Pattern INVALID_CHARS = Pattern.compile("[^a-zA-Z0-9._-]");
 
   public static final String CONNECTION_PREFIX = "connection.";
@@ -501,15 +510,25 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
         Width.LONG,
         TABLE_BLACKLIST_DISPLAY
     ).define(
-            ACCESS_DIRECTORY_PATH_CONFIG,
+            ACCESS_DIRECTORY_UNPROCESSED_PATH_CONFIG,
             Type.STRING,
-            ACCESS_DIRECTORY_PATH_DEFAULT,
+            ACCESS_DIRECTORY_UNPROCESSED_PATH_DEFAULT,
             Importance.HIGH,
             DATABASE_GROUP,
-            ACCESS_DIRECTORY_PATH_DOC,
+            ACCESS_DIRECTORY_UNPROCESSED_PATH_DOC,
             ++orderInGroup,
             Width.LONG,
-            ACCESS_DIRECTORY_PATH_DISPLAY
+            ACCESS_DIRECTORY_UNPROCESSED_PATH_DISPLAY
+    ).define(
+            ACCESS_DIRECTORY_PROCESSED_PATH_CONFIG,
+            Type.STRING,
+            ACCESS_DIRECTORY_PROCESSED_PATH_DEFAULT,
+            Importance.HIGH,
+            DATABASE_GROUP,
+            ACCESS_DIRECTORY_PROCESSED_PATH_DOC,
+            ++orderInGroup,
+            Width.LONG,
+            ACCESS_DIRECTORY_PROCESSED_PATH_DISPLAY
     ).define(
         CATALOG_PATTERN_CONFIG,
         Type.STRING,
