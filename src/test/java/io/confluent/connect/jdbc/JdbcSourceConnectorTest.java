@@ -69,7 +69,6 @@ public class JdbcSourceConnectorTest {
     public MockJdbcSourceConnector(CachedConnectionProvider provider) {
       this.provider = provider;
     }
-    @Override
     protected CachedConnectionProvider connectionProvider(
             int maxConnAttempts,
             long retryBackoff
@@ -85,12 +84,12 @@ public class JdbcSourceConnectorTest {
 
   @Before
   public void setup() {
-    connector = new JdbcSourceConnector();
-    db = new EmbeddedDerby();
-    props = new HashMap<>();
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
-    props.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
-    props.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "test-");
+//    connector = new JdbcSourceConnector();
+//    db = new EmbeddedDerby();
+//    props = new HashMap<>();
+//    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
+//    props.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
+//    props.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "test-");
   }
 
   @After

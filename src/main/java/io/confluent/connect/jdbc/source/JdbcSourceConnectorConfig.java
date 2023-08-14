@@ -59,6 +59,13 @@ import org.slf4j.LoggerFactory;
 public class JdbcSourceConnectorConfig extends AbstractConfig {
 
   private static final Logger LOG = LoggerFactory.getLogger(JdbcSourceConnectorConfig.class);
+  public static final String ACCESS_DIRECTORY_PATH_CONFIG = "access.directory.path";
+  public static final String ACCESS_DIRECTORY_PATH_DOC =
+          "File system directory where MSAcess DB files will be "
+          + "placed for connector processing."
+          + "(for example, ``access.directory.path: \"/Users/username/Documents/accessdbs\"``).";
+  public static final String ACCESS_DIRECTORY_PATH_DISPLAY = "Access Directory Path";
+  public static final String ACCESS_DIRECTORY_PATH_DEFAULT = "";
   private static Pattern INVALID_CHARS = Pattern.compile("[^a-zA-Z0-9._-]");
 
   public static final String CONNECTION_PREFIX = "connection.";
@@ -147,7 +154,7 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
 
   public static final String DIALECT_NAME_CONFIG = "dialect.name";
   private static final String DIALECT_NAME_DISPLAY = "Database Dialect";
-  public static final String DIALECT_NAME_DEFAULT = "";
+  public static final String DIALECT_NAME_DEFAULT = "GenericDatabaseDialect";
   private static final String DIALECT_NAME_DOC =
       "The name of the database dialect that should be used for this connector. By default this "
       + "is empty, and the connector automatically determines the dialect based upon the "
@@ -493,6 +500,16 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
         ++orderInGroup,
         Width.LONG,
         TABLE_BLACKLIST_DISPLAY
+    ).define(
+            ACCESS_DIRECTORY_PATH_CONFIG,
+            Type.STRING,
+            ACCESS_DIRECTORY_PATH_DEFAULT,
+            Importance.HIGH,
+            DATABASE_GROUP,
+            ACCESS_DIRECTORY_PATH_DOC,
+            ++orderInGroup,
+            Width.LONG,
+            ACCESS_DIRECTORY_PATH_DISPLAY
     ).define(
         CATALOG_PATTERN_CONFIG,
         Type.STRING,
