@@ -58,7 +58,10 @@ public class AccessSourceConnector extends SourceConnector {
     try {
       configProperties = properties;
       if (configProperties.get(AccessSourceConnectorConfig.ACCESS_DIRECTORY_UNPROCESSED_PATH_CONFIG).isEmpty()) {
-        throw new ConfigException("missing MS Access Directory path");
+        throw new ConfigException("missing MS Access Directory Unprocessed path");
+      }
+      if (configProperties.get(AccessSourceConnectorConfig.ACCESS_DIRECTORY_PROCESSED_PATH_CONFIG).isEmpty()) {
+        throw new ConfigException("missing MS Access Directory Processed path");
       }
       config = new AccessSourceConnectorConfig(configProperties);
     } catch (ConfigException e) {
