@@ -71,7 +71,7 @@ public class TableQuerierTest {
                                                     TIMESTAMP_DELAY,
                                                     null,
                                                     SUFFIX,
-                                                    JdbcSourceConnectorConfig.TimestampGranularity.CONNECT_LOGICAL
+                                                    AccessSourceConnectorConfig.TimestampGranularity.CONNECT_LOGICAL
                                                 );
       
     querier.createPreparedStatement(connectionMock);
@@ -92,7 +92,7 @@ public class TableQuerierTest {
                                                     TIMESTAMP_DELAY, 
                                                     null, 
                                                     SUFFIX,
-                                                    JdbcSourceConnectorConfig.TimestampGranularity.CONNECT_LOGICAL
+                                                    AccessSourceConnectorConfig.TimestampGranularity.CONNECT_LOGICAL
                                                 );
       
     querier.createPreparedStatement(connectionMock);

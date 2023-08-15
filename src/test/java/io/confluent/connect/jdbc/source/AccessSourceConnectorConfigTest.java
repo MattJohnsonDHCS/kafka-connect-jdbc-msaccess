@@ -34,8 +34,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.CachedRecommenderValues;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.CachingRecommender;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.CachedRecommenderValues;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.CachingRecommender;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -47,7 +47,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({Recommender.class})
 @PowerMockIgnore("javax.management.*")
-public class JdbcSourceConnectorConfigTest {
+public class AccessSourceConnectorConfigTest {
 
   private EmbeddedDerby db;
   private Map<String, String> props;
@@ -84,19 +84,19 @@ public class JdbcSourceConnectorConfigTest {
 
   @Test
   public void testConnectionAttemptsAtLeastOne() {
-    props.put(JdbcSourceConnectorConfig.CONNECTION_ATTEMPTS_CONFIG, "0");
+    props.put(AccessSourceConnectorConfig.CONNECTION_ATTEMPTS_CONFIG, "0");
     Map<String, ConfigValue> validatedConfig =
-        JdbcSourceConnectorConfig.baseConfigDef().validateAll(props);
+        AccessSourceConnectorConfig.baseConfigDef().validateAll(props);
     ConfigValue connectionAttemptsConfig =
-        validatedConfig.get(JdbcSourceConnectorConfig.CONNECTION_ATTEMPTS_CONFIG);
+        validatedConfig.get(AccessSourceConnectorConfig.CONNECTION_ATTEMPTS_CONFIG);
     assertNotNull(connectionAttemptsConfig);
     assertFalse(connectionAttemptsConfig.errorMessages().isEmpty());
   }
 
   @Test
   public void testConfigTableNameRecommenderWithoutSchemaOrTableTypes() throws Exception {
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
-    configDef = JdbcSourceConnectorConfig.baseConfigDef();
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
+    configDef = AccessSourceConnectorConfig.baseConfigDef();
     results = configDef.validate(props);
     // Should have no recommended values
     assertWhitelistRecommendations();
@@ -105,9 +105,9 @@ public class JdbcSourceConnectorConfigTest {
 
   @Test
   public void testConfigTableNameRecommenderWitSchemaAndWithoutTableTypes() throws Exception {
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
-    props.put(JdbcSourceConnectorConfig.SCHEMA_PATTERN_CONFIG, "PRIVATE_SCHEMA");
-    configDef = JdbcSourceConnectorConfig.baseConfigDef();
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
+    props.put(AccessSourceConnectorConfig.SCHEMA_PATTERN_CONFIG, "PRIVATE_SCHEMA");
+    configDef = AccessSourceConnectorConfig.baseConfigDef();
     results = configDef.validate(props);
     // Should have no recommended values
     assertWhitelistRecommendations();
@@ -116,10 +116,10 @@ public class JdbcSourceConnectorConfigTest {
 
   @Test
   public void testConfigTableNameRecommenderWithSchemaAndTableTypes() throws Exception {
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
-    props.put(JdbcSourceConnectorConfig.SCHEMA_PATTERN_CONFIG, "PRIVATE_SCHEMA");
-    props.put(JdbcSourceConnectorConfig.TABLE_TYPE_CONFIG, "VIEW");
-    configDef = JdbcSourceConnectorConfig.baseConfigDef();
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
+    props.put(AccessSourceConnectorConfig.SCHEMA_PATTERN_CONFIG, "PRIVATE_SCHEMA");
+    props.put(AccessSourceConnectorConfig.TABLE_TYPE_CONFIG, "VIEW");
+    configDef = AccessSourceConnectorConfig.baseConfigDef();
     results = configDef.validate(props);
     assertWhitelistRecommendations();
     assertBlacklistRecommendations();
@@ -193,38 +193,38 @@ public class JdbcSourceConnectorConfigTest {
 
   @Test
   public void testSpacesInTopicPrefix() {
-    props.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, " withLeadingTailingSpaces ");
+    props.put(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG, " withLeadingTailingSpaces ");
     Map<String, ConfigValue> validatedConfig =
-        JdbcSourceConnectorConfig.baseConfigDef().validateAll(props);
+        AccessSourceConnectorConfig.baseConfigDef().validateAll(props);
     ConfigValue connectionAttemptsConfig =
-        validatedConfig.get(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
+        validatedConfig.get(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
     assertNotNull(connectionAttemptsConfig);
     assertTrue(connectionAttemptsConfig.errorMessages().isEmpty());
 
-    props.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "with spaces");
+    props.put(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "with spaces");
     validatedConfig =
-        JdbcSourceConnectorConfig.baseConfigDef().validateAll(props);
+        AccessSourceConnectorConfig.baseConfigDef().validateAll(props);
     connectionAttemptsConfig =
-        validatedConfig.get(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
+        validatedConfig.get(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
     assertNotNull(connectionAttemptsConfig);
     assertFalse(connectionAttemptsConfig.errorMessages().isEmpty());
   }
 
   @Test
   public void testInvalidCharsInTopicPrefix() {
-    props.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "az_-.09");
+    props.put(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "az_-.09");
     Map<String, ConfigValue> validatedConfig =
-        JdbcSourceConnectorConfig.baseConfigDef().validateAll(props);
+        AccessSourceConnectorConfig.baseConfigDef().validateAll(props);
     ConfigValue connectionAttemptsConfig =
-        validatedConfig.get(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
+        validatedConfig.get(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
     assertNotNull(connectionAttemptsConfig);
     assertTrue(connectionAttemptsConfig.errorMessages().isEmpty());
 
-    props.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "az_-.!@#$%^&*09");
+    props.put(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "az_-.!@#$%^&*09");
     validatedConfig =
-        JdbcSourceConnectorConfig.baseConfigDef().validateAll(props);
+        AccessSourceConnectorConfig.baseConfigDef().validateAll(props);
     connectionAttemptsConfig =
-        validatedConfig.get(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
+        validatedConfig.get(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
     assertNotNull(connectionAttemptsConfig);
     assertFalse(connectionAttemptsConfig.errorMessages().isEmpty());
   }
@@ -235,20 +235,20 @@ public class JdbcSourceConnectorConfigTest {
     for (int i = 0; i < 249; i++) {
       sb.append("a");
     }
-    props.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, sb.toString());
+    props.put(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG, sb.toString());
     Map<String, ConfigValue> validatedConfig =
-        JdbcSourceConnectorConfig.baseConfigDef().validateAll(props);
+        AccessSourceConnectorConfig.baseConfigDef().validateAll(props);
     ConfigValue connectionAttemptsConfig =
-        validatedConfig.get(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
+        validatedConfig.get(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
     assertNotNull(connectionAttemptsConfig);
     assertTrue(connectionAttemptsConfig.errorMessages().isEmpty());
 
     sb.append("a");
-    props.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, sb.toString());
+    props.put(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG, sb.toString());
     validatedConfig =
-        JdbcSourceConnectorConfig.baseConfigDef().validateAll(props);
+        AccessSourceConnectorConfig.baseConfigDef().validateAll(props);
     connectionAttemptsConfig =
-        validatedConfig.get(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
+        validatedConfig.get(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG);
     assertNotNull(connectionAttemptsConfig);
     assertFalse(connectionAttemptsConfig.errorMessages().isEmpty());
   }
@@ -275,11 +275,11 @@ public class JdbcSourceConnectorConfigTest {
 
   @SuppressWarnings("unchecked")
   protected <T> void assertWhitelistRecommendations(T... recommendedValues) {
-    assertContains(namedValue(results, JdbcSourceConnectorConfig.TABLE_WHITELIST_CONFIG).recommendedValues(), recommendedValues);
+    assertContains(namedValue(results, AccessSourceConnectorConfig.TABLE_WHITELIST_CONFIG).recommendedValues(), recommendedValues);
   }
 
   @SuppressWarnings("unchecked")
   protected <T> void assertBlacklistRecommendations(T... recommendedValues) {
-    assertContains(namedValue(results, JdbcSourceConnectorConfig.TABLE_BLACKLIST_CONFIG).recommendedValues(), recommendedValues);
+    assertContains(namedValue(results, AccessSourceConnectorConfig.TABLE_BLACKLIST_CONFIG).recommendedValues(), recommendedValues);
   }
 }

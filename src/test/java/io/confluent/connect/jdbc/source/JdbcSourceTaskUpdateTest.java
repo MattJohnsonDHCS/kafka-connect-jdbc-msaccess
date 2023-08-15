@@ -16,37 +16,22 @@
 package io.confluent.connect.jdbc.source;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.time.ZoneOffset;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import org.apache.kafka.common.config.ConfigException;
-import org.apache.kafka.connect.data.Struct;
-import org.apache.kafka.connect.errors.ConnectException;
-import org.apache.kafka.connect.source.SourceRecord;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.powermock.api.easymock.PowerMock;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.modules.junit4.PowerMockRunner;
-
-import io.confluent.connect.jdbc.util.DateTimeUtils;
 
 // Tests of polling that return data updates, i.e. verifies the different behaviors for getting
 // incremental data updates from the database
@@ -54,8 +39,8 @@ import io.confluent.connect.jdbc.util.DateTimeUtils;
 @PowerMockIgnore("javax.management.*")
 public class JdbcSourceTaskUpdateTest extends JdbcSourceTaskTestBase {
   private static final Map<String, String> QUERY_SOURCE_PARTITION
-      = Collections.singletonMap(JdbcSourceConnectorConstants.QUERY_NAME_KEY,
-                                 JdbcSourceConnectorConstants.QUERY_NAME_VALUE);
+      = Collections.singletonMap(AccessSourceConnectorConstants.QUERY_NAME_KEY,
+                                 AccessSourceConnectorConstants.QUERY_NAME_VALUE);
 
   private static final TimeZone UTC_TIME_ZONE = TimeZone.getTimeZone(ZoneOffset.UTC);
 

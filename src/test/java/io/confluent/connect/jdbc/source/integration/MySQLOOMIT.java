@@ -2,8 +2,8 @@ package io.confluent.connect.jdbc.source.integration;
 
 import ch.vorburger.mariadb4j.junit.MariaDB4jRule;
 import io.confluent.common.utils.IntegrationTest;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
-import io.confluent.connect.jdbc.source.JdbcSourceTaskConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceTaskConfig;
 import java.util.HashMap;
 import org.junit.Before;
 import org.junit.Rule;
@@ -25,11 +25,11 @@ public class MySQLOOMIT extends BaseOOMIntegrationTest {
   @Before
   public void before() {
     props = new HashMap<>();
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG,
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG,
         dbRule.getDBConfiguration().getURL("test"));
-    props.put(JdbcSourceConnectorConfig.CONNECTION_USER_CONFIG, "root");
-    props.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
-    props.put(JdbcSourceTaskConfig.TOPIC_PREFIX_CONFIG, "topic_");
+    props.put(AccessSourceConnectorConfig.CONNECTION_USER_CONFIG, "root");
+    props.put(AccessSourceConnectorConfig.MODE_CONFIG, AccessSourceConnectorConfig.MODE_BULK);
+    props.put(AccessSourceTaskConfig.TOPIC_PREFIX_CONFIG, "topic_");
     // Use "extra" connection properties behavior
     props.put("connection.useCursorFetch", "true");
   }

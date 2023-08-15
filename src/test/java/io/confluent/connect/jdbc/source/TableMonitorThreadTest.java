@@ -50,7 +50,7 @@ import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({JdbcSourceTask.class})
+@PrepareForTest({AccessSourceTask.class})
 @PowerMockIgnore("javax.management.*")
 public class TableMonitorThreadTest {
   private static final long STARTUP_LIMIT = 50;

@@ -42,20 +42,20 @@ import java.util.regex.Pattern;
 import io.confluent.connect.jdbc.dialect.DatabaseDialect;
 import io.confluent.connect.jdbc.dialect.DatabaseDialects;
 import io.confluent.connect.jdbc.util.Version;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TransactionIsolationMode;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TransactionIsolationMode;
 
 /**
  * JdbcSourceTask is a Kafka Connect SourceTask implementation that reads from JDBC databases and
  * generates Kafka Connect records.
  */
-public class JdbcSourceTask extends SourceTask {
+public class AccessSourceTask extends SourceTask {
   // When no results, periodically return control flow to caller to give it a chance to pause us.
   private static final int CONSECUTIVE_EMPTY_RESULTS_BEFORE_RETURN = 3;
 
-  private static final Logger log = LoggerFactory.getLogger(JdbcSourceTask.class);
+  private static final Logger log = LoggerFactory.getLogger(AccessSourceTask.class);
 
   private Time time;
-  private JdbcSourceTaskConfig config;
+  private AccessSourceTaskConfig config;
   private DatabaseDialect dialect;
   //Visible for Testing
   Connection connection;
@@ -67,11 +67,11 @@ public class JdbcSourceTask extends SourceTask {
 
   int maxRetriesPerQuerier;
 
-  public JdbcSourceTask() {
+  public AccessSourceTask() {
     this.time = new SystemTime();
   }
 
-  public JdbcSourceTask(Time time) {
+  public AccessSourceTask(Time time) {
     this.time = time;
   }
 
@@ -84,7 +84,7 @@ public class JdbcSourceTask extends SourceTask {
   public void start(Map<String, String> properties) {
     log.info("Starting JDBC source task");
     try {
-      config = new JdbcSourceTaskConfig(properties);
+      config = new AccessSourceTaskConfig(properties);
     } catch (ConfigException e) {
       throw new ConfigException("Couldn't start JdbcSourceTask due to configuration error", e);
     }
@@ -104,15 +104,15 @@ public class JdbcSourceTask extends SourceTask {
 
   @Override
   public List<SourceRecord> poll() throws InterruptedException {
-    log.trace("Polling for new data");
+    log.info("Polling for new data");
     final List<SourceRecord> results = new ArrayList<>();
 
     File sourceDirectory =
-            new File(config.getString(JdbcSourceConnectorConfig.ACCESS_DIRECTORY_UNPROCESSED_PATH_CONFIG));
+            new File(config.getString(AccessSourceConnectorConfig.ACCESS_DIRECTORY_UNPROCESSED_PATH_CONFIG));
     List<File> accessFiles = Arrays.asList(sourceDirectory.listFiles((dir, name) -> name.toLowerCase().endsWith(".accdb")));
 
     File destinationDirectory =
-            new File(config.getString(JdbcSourceConnectorConfig.ACCESS_DIRECTORY_PROCESSED_PATH_CONFIG));
+            new File(config.getString(AccessSourceConnectorConfig.ACCESS_DIRECTORY_PROCESSED_PATH_CONFIG));
 
     if(!accessFiles.isEmpty()) {
       File file = accessFiles.get(0);
@@ -127,14 +127,21 @@ public class JdbcSourceTask extends SourceTask {
         throw new RuntimeException(e);
       }
       try {
-        connection = DriverManager.getConnection("jdbc:ucanaccess://" + file.getAbsolutePath());
+        String jdbcUrl = "jdbc:ucanaccess://" + file.getAbsolutePath();
+        log.info("Jdbc URL is: {}", jdbcUrl);
+
+        Map<String, String> props = config.originalsStrings();
+        props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, jdbcUrl);
+        config = new AccessSourceTaskConfig(props);
+
+        connection = DriverManager.getConnection(jdbcUrl);
         DatabaseMetaData md = connection.getMetaData();
         ResultSet rs = md.getTables(null, null, "%", null);
         while (rs.next()) {
           tableList.add(rs.getString(3));
         }
 
-        final String dialectName = config.getString(JdbcSourceConnectorConfig.DIALECT_NAME_CONFIG);
+        final String dialectName = config.getString(AccessSourceConnectorConfig.DIALECT_NAME_CONFIG);
         if (dialectName != null && !dialectName.trim().isEmpty()) {
           dialect = DatabaseDialects.create(dialectName, config);
         } else {
@@ -147,7 +154,7 @@ public class JdbcSourceTask extends SourceTask {
                 TransactionIsolationMode
                         .valueOf(
                                 config.getString(
-                                        JdbcSourceConnectorConfig
+                                        AccessSourceConnectorConfig
                                                 .TRANSACTION_ISOLATION_MODE_CONFIG
                                 )
                         )
@@ -163,7 +170,7 @@ public class JdbcSourceTask extends SourceTask {
                         dialect,
                         TableQuerier.QueryMode.TABLE,
                         table,
-                        config.getString(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG)
+                        config.getString(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG)
                                 + "_" + getFileNameWithoutExtension(file),
                         ""
                 )
@@ -176,19 +183,19 @@ public class JdbcSourceTask extends SourceTask {
         if (!querier.querying()) {
           // If not in the middle of an update, wait for next update time
           final long nextUpdate = querier.getLastUpdate()
-                  + config.getInt(JdbcSourceTaskConfig.POLL_INTERVAL_MS_CONFIG);
+                  + config.getInt(AccessSourceTaskConfig.POLL_INTERVAL_MS_CONFIG);
           final long now = time.milliseconds();
           final long sleepMs = Math.min(nextUpdate - now, 100);
 
           if (sleepMs > 0) {
-            log.trace("Waiting {} ms to poll {} next", nextUpdate - now, querier.toString());
+            log.info("Waiting {} ms to poll {} next", nextUpdate - now, querier.toString());
             time.sleep(sleepMs);
             continue; // Re-check stop flag before continuing
           }
         }
 
         try {
-          log.debug("Checking for next block of results from {}", querier.toString());
+          log.info("Checking for next block of results from {}", querier.toString());
           querier.maybeStartQuery(connection);
           results.add(querier.extractRecord());
         } catch (SQLNonTransientException sqle) {
@@ -220,8 +227,9 @@ public class JdbcSourceTask extends SourceTask {
         log.error("Error moving file: {} to processed directory.", file.getName());
       }
     }
+    log.info("closing all resources");
     closeAllResources();
-    log.debug("Returning {} records", results.size());
+    log.info("Returning {} records", results.size());
     return results;
   }
 

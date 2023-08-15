@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.NumericMapping;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.NumericMapping;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(Parameterized.class)
@@ -68,17 +68,17 @@ public class NumericMappingConfigTest {
 
   @Test
   public void testNumericMapping() throws Exception {
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, "jdbc:foo:bar");
-    props.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
-    props.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "test-");
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, "jdbc:foo:bar");
+    props.put(AccessSourceConnectorConfig.MODE_CONFIG, AccessSourceConnectorConfig.MODE_BULK);
+    props.put(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "test-");
     props.put(
-        JdbcSourceConnectorConfig.NUMERIC_PRECISION_MAPPING_CONFIG,
+        AccessSourceConnectorConfig.NUMERIC_PRECISION_MAPPING_CONFIG,
         String.valueOf(precisionMapping)
     );
     if (extendedMapping != null) {
-      props.put(JdbcSourceConnectorConfig.NUMERIC_MAPPING_CONFIG, extendedMapping);
+      props.put(AccessSourceConnectorConfig.NUMERIC_MAPPING_CONFIG, extendedMapping);
     }
-    JdbcSourceConnectorConfig config = new JdbcSourceConnectorConfig(props);
+    AccessSourceConnectorConfig config = new AccessSourceConnectorConfig(props);
     assertEquals(expected, NumericMapping.get(config));
   }
 }

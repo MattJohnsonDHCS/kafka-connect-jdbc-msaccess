@@ -35,7 +35,7 @@ import java.sql.SQLException;
 import java.util.Arrays;
 import java.util.List;
 
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TimestampGranularity;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TimestampGranularity;
 import io.confluent.connect.jdbc.util.ColumnId;
 import io.confluent.connect.jdbc.util.ExpressionBuilder;
 import io.confluent.connect.jdbc.util.IdentifierRules;

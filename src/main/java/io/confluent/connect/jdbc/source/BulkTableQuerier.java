@@ -99,12 +99,12 @@ public class BulkTableQuerier extends TableQuerier {
     switch (mode) {
       case TABLE:
         String name = tableId.tableName(); // backwards compatible
-        partition = Collections.singletonMap(JdbcSourceConnectorConstants.TABLE_NAME_KEY, name);
+        partition = Collections.singletonMap(AccessSourceConnectorConstants.TABLE_NAME_KEY, name);
         topic = topicPrefix + name;
         break;
       case QUERY:
-        partition = Collections.singletonMap(JdbcSourceConnectorConstants.QUERY_NAME_KEY,
-                                             JdbcSourceConnectorConstants.QUERY_NAME_VALUE
+        partition = Collections.singletonMap(AccessSourceConnectorConstants.QUERY_NAME_KEY,
+                                             AccessSourceConnectorConstants.QUERY_NAME_VALUE
         );
         topic = topicPrefix;
         break;

@@ -29,7 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.NumericMapping;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.NumericMapping;
 
 public class JdbcSourceTaskTestBase {
 
@@ -47,7 +47,7 @@ public class JdbcSourceTaskTestBase {
   protected static Map<String, Object> SECOND_TABLE_PARTITION = new HashMap<>();
 
   static {
-    SECOND_TABLE_PARTITION.put(JdbcSourceConnectorConstants.TABLE_NAME_KEY, SECOND_TABLE_NAME);
+    SECOND_TABLE_PARTITION.put(AccessSourceConnectorConstants.TABLE_NAME_KEY, SECOND_TABLE_NAME);
   }
 
   protected static EmbeddedDerby.TableName SECOND_TABLE
@@ -57,8 +57,8 @@ public class JdbcSourceTaskTestBase {
   protected static Map<String, Object> JOIN_QUERY_PARTITION = new HashMap<>();
 
   static {
-    JOIN_QUERY_PARTITION.put(JdbcSourceConnectorConstants.QUERY_NAME_KEY,
-                             JdbcSourceConnectorConstants.QUERY_NAME_VALUE);
+    JOIN_QUERY_PARTITION.put(AccessSourceConnectorConstants.QUERY_NAME_KEY,
+                             AccessSourceConnectorConstants.QUERY_NAME_VALUE);
   }
   protected static EmbeddedDerby.TableName JOIN_TABLE
       = new EmbeddedDerby.TableName(JOIN_TABLE_NAME);
@@ -68,7 +68,7 @@ public class JdbcSourceTaskTestBase {
   protected Time time;
   @Mock
   protected SourceTaskContext taskContext;
-  protected JdbcSourceTask task;
+  protected AccessSourceTask task;
   protected EmbeddedDerby db;
   @Mock
   private OffsetStorageReader reader;
@@ -76,7 +76,7 @@ public class JdbcSourceTaskTestBase {
   @Before
   public void setup() throws Exception {
     time = new MockTime();
-    task = new JdbcSourceTask(time);
+    task = new AccessSourceTask(time);
     db = new EmbeddedDerby();
   }
 
@@ -92,15 +92,15 @@ public class JdbcSourceTaskTestBase {
 
   protected Map<String, String> singleTableConfig(boolean completeMapping) {
     Map<String, String> props = new HashMap<>();
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
-    props.put(JdbcSourceTaskConfig.TABLES_CONFIG, SINGLE_TABLE_NAME);
-    props.put(JdbcSourceTaskConfig.TABLES_FETCHED, "true");
-    props.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
-    props.put(JdbcSourceTaskConfig.TOPIC_PREFIX_CONFIG, TOPIC_PREFIX);
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
+    props.put(AccessSourceTaskConfig.TABLES_CONFIG, SINGLE_TABLE_NAME);
+    props.put(AccessSourceTaskConfig.TABLES_FETCHED, "true");
+    props.put(AccessSourceConnectorConfig.MODE_CONFIG, AccessSourceConnectorConfig.MODE_BULK);
+    props.put(AccessSourceTaskConfig.TOPIC_PREFIX_CONFIG, TOPIC_PREFIX);
     if (completeMapping) {
-      props.put(JdbcSourceTaskConfig.NUMERIC_MAPPING_CONFIG, NumericMapping.BEST_FIT.toString());
+      props.put(AccessSourceTaskConfig.NUMERIC_MAPPING_CONFIG, NumericMapping.BEST_FIT.toString());
     } else {
-      props.put(JdbcSourceTaskConfig.NUMERIC_PRECISION_MAPPING_CONFIG, "true");
+      props.put(AccessSourceTaskConfig.NUMERIC_PRECISION_MAPPING_CONFIG, "true");
     }
     return props;
   }
@@ -109,17 +109,17 @@ public class JdbcSourceTaskTestBase {
       boolean completeMapping,
       TimeZone tz) {
     Map<String, String> props = singleTableConfig(completeMapping);
-    props.put(JdbcSourceTaskConfig.DB_TIMEZONE_CONFIG, tz.getID());
+    props.put(AccessSourceTaskConfig.DB_TIMEZONE_CONFIG, tz.getID());
     return props;
   }
 
   protected Map<String, String> twoTableConfig() {
     Map<String, String> props = new HashMap<>();
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
-    props.put(JdbcSourceTaskConfig.TABLES_CONFIG, SINGLE_TABLE_NAME + "," + SECOND_TABLE_NAME);
-    props.put(JdbcSourceTaskConfig.TABLES_FETCHED, "true");
-    props.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
-    props.put(JdbcSourceTaskConfig.TOPIC_PREFIX_CONFIG, TOPIC_PREFIX);
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
+    props.put(AccessSourceTaskConfig.TABLES_CONFIG, SINGLE_TABLE_NAME + "," + SECOND_TABLE_NAME);
+    props.put(AccessSourceTaskConfig.TABLES_FETCHED, "true");
+    props.put(AccessSourceConnectorConfig.MODE_CONFIG, AccessSourceConnectorConfig.MODE_BULK);
+    props.put(AccessSourceTaskConfig.TOPIC_PREFIX_CONFIG, TOPIC_PREFIX);
     return props;
   }
 

@@ -4,9 +4,9 @@ import static junit.framework.TestCase.assertTrue;
 import static org.junit.Assert.assertEquals;
 
 import io.confluent.common.utils.IntegrationTest;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
-import io.confluent.connect.jdbc.source.JdbcSourceTask;
-import io.confluent.connect.jdbc.source.JdbcSourceTaskConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceTask;
+import io.confluent.connect.jdbc.source.AccessSourceTaskConfig;
 import io.zonky.test.db.postgres.junit.EmbeddedPostgresRules;
 import io.zonky.test.db.postgres.junit.SingleInstancePostgresRule;
 import java.sql.Connection;
@@ -37,10 +37,10 @@ public class PostgresOOMIT extends BaseOOMIntegrationTest {
     props = new HashMap<>();
     String jdbcURL = String
         .format("jdbc:postgresql://localhost:%s/postgres", pg.getEmbeddedPostgres().getPort());
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, jdbcURL);
-    props.put(JdbcSourceConnectorConfig.CONNECTION_USER_CONFIG, "postgres");
-    props.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
-    props.put(JdbcSourceTaskConfig.TOPIC_PREFIX_CONFIG, "topic_");
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, jdbcURL);
+    props.put(AccessSourceConnectorConfig.CONNECTION_USER_CONFIG, "postgres");
+    props.put(AccessSourceConnectorConfig.MODE_CONFIG, AccessSourceConnectorConfig.MODE_BULK);
+    props.put(AccessSourceTaskConfig.TOPIC_PREFIX_CONFIG, "topic_");
   }
 
   protected String buildLargeQuery() {
@@ -60,8 +60,8 @@ public class PostgresOOMIT extends BaseOOMIntegrationTest {
   @Test
   public void testTableLocksWithStreamingReads() throws InterruptedException, SQLException {
     createTestTable();
-    props.put(JdbcSourceTaskConfig.TABLES_CONFIG, "test_table");
-    props.put(JdbcSourceTaskConfig.TABLES_FETCHED, "true");
+    props.put(AccessSourceTaskConfig.TABLES_CONFIG, "test_table");
+    props.put(AccessSourceTaskConfig.TABLES_FETCHED, "true");
     startTask();
     assertNoLocksOpen(task);
     assertTrue(task.poll().size() > 0);
@@ -81,7 +81,7 @@ public class PostgresOOMIT extends BaseOOMIntegrationTest {
     log.info("Created table");
   }
 
-  private void assertNoLocksOpen(JdbcSourceTask task) throws SQLException {
+  private void assertNoLocksOpen(AccessSourceTask task) throws SQLException {
     log.info("Checking for orphaned locks");
     int count = 0;
     try (Connection c = pg.getEmbeddedPostgres().getPostgresDatabase().getConnection()) {

@@ -30,8 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.confluent.connect.jdbc.dialect.DatabaseDialect;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
-import io.confluent.connect.jdbc.source.JdbcSourceTask;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceTask;
 import io.confluent.connect.jdbc.util.Version;
 
 /**
@@ -39,12 +39,12 @@ import io.confluent.connect.jdbc.util.Version;
  * file directory for MS Access DB Files and
  * generates tasks to ingest the database contents.
  */
-public abstract class JdbcSourceConnector extends SourceConnector {
+public class AccessSourceConnector extends SourceConnector {
 
-  private static final Logger log = LoggerFactory.getLogger(JdbcSourceConnector.class);
+  private static final Logger log = LoggerFactory.getLogger(AccessSourceConnector.class);
 
   private Map<String, String> configProperties;
-  private JdbcSourceConnectorConfig config;
+  private AccessSourceConnectorConfig config;
   private DatabaseDialect dialect;
 
   @Override
@@ -57,10 +57,10 @@ public abstract class JdbcSourceConnector extends SourceConnector {
     log.info("Starting JDBC Source Connector");
     try {
       configProperties = properties;
-      if (configProperties.get(JdbcSourceConnectorConfig.ACCESS_DIRECTORY_PATH_CONFIG).isEmpty()) {
+      if (configProperties.get(AccessSourceConnectorConfig.ACCESS_DIRECTORY_UNPROCESSED_PATH_CONFIG).isEmpty()) {
         throw new ConfigException("missing MS Access Directory path");
       }
-      config = new JdbcSourceConnectorConfig(configProperties);
+      config = new AccessSourceConnectorConfig(configProperties);
     } catch (ConfigException e) {
       throw new ConnectException("Couldn't start JdbcSourceConnector due to configuration error",
               e);
@@ -69,15 +69,15 @@ public abstract class JdbcSourceConnector extends SourceConnector {
 
   @Override
   public Class<? extends Task> taskClass() {
-    return JdbcSourceTask.class;
+    return AccessSourceTask.class;
   }
 
   @Override
   public Config validate(Map<String, String> connectorConfigs) {
     Config config = super.validate(connectorConfigs);
-    JdbcSourceConnectorConfig jdbcSourceConnectorConfig
-            = new JdbcSourceConnectorConfig(connectorConfigs);
-    jdbcSourceConnectorConfig.validateMultiConfigs(config);
+    AccessSourceConnectorConfig accessSourceConnectorConfig
+            = new AccessSourceConnectorConfig(connectorConfigs);
+    accessSourceConnectorConfig.validateMultiConfigs(config);
     return config;
   }
 
@@ -95,6 +95,6 @@ public abstract class JdbcSourceConnector extends SourceConnector {
 
   @Override
   public ConfigDef config() {
-    return JdbcSourceConnectorConfig.CONFIG_DEF;
+    return AccessSourceConnectorConfig.CONFIG_DEF;
   }
 }

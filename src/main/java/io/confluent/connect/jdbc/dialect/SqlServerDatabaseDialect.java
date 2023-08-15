@@ -59,7 +59,7 @@ import io.confluent.connect.jdbc.util.ColumnDefinition.Mutability;
 import io.confluent.connect.jdbc.util.ColumnDefinition.Nullability;
 import org.apache.kafka.connect.errors.ConnectException;
 
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TIMESTAMP_COLUMN_NAME_CONFIG;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TIMESTAMP_COLUMN_NAME_CONFIG;
 
 /**
  * A {@link DatabaseDialect} for SQL Server.

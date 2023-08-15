@@ -27,7 +27,7 @@ import java.util.Set;
 import java.util.TimeZone;
 import java.util.stream.Collectors;
 
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
 
 import io.confluent.connect.jdbc.util.ConfigUtils;
 import io.confluent.connect.jdbc.util.DatabaseDialectRecommender;
@@ -67,7 +67,7 @@ public class JdbcSinkConfig extends AbstractConfig {
       )
   );
 
-  public static final String CONNECTION_URL = JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG;
+  public static final String CONNECTION_URL = AccessSourceConnectorConfig.CONNECTION_URL_CONFIG;
   private static final String CONNECTION_URL_DOC =
       "JDBC connection URL.\n"
           + "For example: ``jdbc:oracle:thin:@localhost:1521:orclpdb1``, "
@@ -76,32 +76,32 @@ public class JdbcSinkConfig extends AbstractConfig {
           + "databaseName=db_name``";
   private static final String CONNECTION_URL_DISPLAY = "JDBC URL";
 
-  public static final String CONNECTION_USER = JdbcSourceConnectorConfig.CONNECTION_USER_CONFIG;
+  public static final String CONNECTION_USER = AccessSourceConnectorConfig.CONNECTION_USER_CONFIG;
   private static final String CONNECTION_USER_DOC = "JDBC connection user.";
   private static final String CONNECTION_USER_DISPLAY = "JDBC User";
 
   public static final String CONNECTION_PASSWORD =
-      JdbcSourceConnectorConfig.CONNECTION_PASSWORD_CONFIG;
+      AccessSourceConnectorConfig.CONNECTION_PASSWORD_CONFIG;
   private static final String CONNECTION_PASSWORD_DOC = "JDBC connection password.";
   private static final String CONNECTION_PASSWORD_DISPLAY = "JDBC Password";
 
   public static final String CONNECTION_ATTEMPTS =
-      JdbcSourceConnectorConfig.CONNECTION_ATTEMPTS_CONFIG;
+      AccessSourceConnectorConfig.CONNECTION_ATTEMPTS_CONFIG;
   private static final String CONNECTION_ATTEMPTS_DOC =
-      JdbcSourceConnectorConfig.CONNECTION_ATTEMPTS_DOC;
+      AccessSourceConnectorConfig.CONNECTION_ATTEMPTS_DOC;
   private static final String CONNECTION_ATTEMPTS_DISPLAY =
-      JdbcSourceConnectorConfig.CONNECTION_ATTEMPTS_DISPLAY;
+      AccessSourceConnectorConfig.CONNECTION_ATTEMPTS_DISPLAY;
   public static final int CONNECTION_ATTEMPTS_DEFAULT =
-      JdbcSourceConnectorConfig.CONNECTION_ATTEMPTS_DEFAULT;
+      AccessSourceConnectorConfig.CONNECTION_ATTEMPTS_DEFAULT;
 
   public static final String CONNECTION_BACKOFF =
-      JdbcSourceConnectorConfig.CONNECTION_BACKOFF_CONFIG;
+      AccessSourceConnectorConfig.CONNECTION_BACKOFF_CONFIG;
   private static final String CONNECTION_BACKOFF_DOC =
-      JdbcSourceConnectorConfig.CONNECTION_BACKOFF_DOC;
+      AccessSourceConnectorConfig.CONNECTION_BACKOFF_DOC;
   private static final String CONNECTION_BACKOFF_DISPLAY =
-      JdbcSourceConnectorConfig.CONNECTION_BACKOFF_DISPLAY;
+      AccessSourceConnectorConfig.CONNECTION_BACKOFF_DISPLAY;
   public static final long CONNECTION_BACKOFF_DEFAULT =
-      JdbcSourceConnectorConfig.CONNECTION_BACKOFF_DEFAULT;
+      AccessSourceConnectorConfig.CONNECTION_BACKOFF_DEFAULT;
 
   public static final String TABLE_NAME_FORMAT = "table.name.format";
   private static final String TABLE_NAME_FORMAT_DEFAULT = "${topic}";
@@ -236,13 +236,13 @@ public class JdbcSinkConfig extends AbstractConfig {
   private static final String DB_TIMEZONE_CONFIG_DISPLAY = "DB Time Zone";
 
   public static final String QUOTE_SQL_IDENTIFIERS_CONFIG =
-      JdbcSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_CONFIG;
+      AccessSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_CONFIG;
   public static final String QUOTE_SQL_IDENTIFIERS_DEFAULT =
-      JdbcSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_DEFAULT;
+      AccessSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_DEFAULT;
   public static final String QUOTE_SQL_IDENTIFIERS_DOC =
-      JdbcSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_DOC;
+      AccessSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_DOC;
   private static final String QUOTE_SQL_IDENTIFIERS_DISPLAY =
-      JdbcSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_DISPLAY;
+      AccessSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_DISPLAY;
 
   public static final String TABLE_TYPES_CONFIG = "table.types";
   private static final String TABLE_TYPES_DISPLAY = "Table Types";

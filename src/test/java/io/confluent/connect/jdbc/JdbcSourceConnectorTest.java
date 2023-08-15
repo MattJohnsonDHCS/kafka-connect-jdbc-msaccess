@@ -42,9 +42,9 @@ import java.util.concurrent.TimeUnit;
 
 import io.confluent.connect.jdbc.dialect.DatabaseDialect;
 import io.confluent.connect.jdbc.source.EmbeddedDerby;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
-import io.confluent.connect.jdbc.source.JdbcSourceTask;
-import io.confluent.connect.jdbc.source.JdbcSourceTaskConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceTask;
+import io.confluent.connect.jdbc.source.AccessSourceTaskConfig;
 import io.confluent.connect.jdbc.util.CachedConnectionProvider;
 import io.confluent.connect.jdbc.util.ExpressionBuilder;
 import io.confluent.connect.jdbc.util.TableId;
@@ -55,15 +55,15 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({JdbcSourceConnector.class, DatabaseDialect.class})
+@PrepareForTest({AccessSourceConnector.class, DatabaseDialect.class})
 @PowerMockIgnore("javax.management.*")
 public class JdbcSourceConnectorTest {
 
-  private JdbcSourceConnector connector;
+  private AccessSourceConnector connector;
   private EmbeddedDerby db;
   private Map<String, String> props;
 
-  public static class MockJdbcSourceConnector extends JdbcSourceConnector {
+  public static class MockJdbcSourceConnector extends AccessSourceConnector {
     CachedConnectionProvider provider;
     public MockJdbcSourceConnector() {}
     public MockJdbcSourceConnector(CachedConnectionProvider provider) {
@@ -100,27 +100,27 @@ public class JdbcSourceConnectorTest {
 
   @Test
   public void testTaskClass() {
-    assertEquals(JdbcSourceTask.class, connector.taskClass());
+    assertEquals(AccessSourceTask.class, connector.taskClass());
   }
 
   @Test(expected = ConnectException.class)
   public void testMissingUrlConfig() throws Exception {
     HashMap<String, String> connProps = new HashMap<>();
-    connProps.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
+    connProps.put(AccessSourceConnectorConfig.MODE_CONFIG, AccessSourceConnectorConfig.MODE_BULK);
     connector.start(connProps);
   }
 
   @Test(expected = ConnectException.class)
   public void testMissingModeConfig() throws Exception {
     HashMap<String, String> connProps = new HashMap<>();
-    connProps.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
+    connProps.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
     connector.start(Collections.<String, String>emptyMap());
   }
 
   @Test(expected = ConnectException.class)
   public void testStartConnectionFailure() throws Exception {
     // Invalid URL
-    connector.start(Collections.singletonMap(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, "jdbc:foo"));
+    connector.start(Collections.singletonMap(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, "jdbc:foo"));
   }
 
   @Test
@@ -181,8 +181,8 @@ public class JdbcSourceConnectorTest {
     List<Map<String, String>> configs = connector.taskConfigs(10);
     assertEquals(1, configs.size());
     assertTaskConfigsHaveParentConfigs(configs);
-    assertEquals(tables("test"), configs.get(0).get(JdbcSourceTaskConfig.TABLES_CONFIG));
-    assertNull(configs.get(0).get(JdbcSourceTaskConfig.QUERY_CONFIG));
+    assertEquals(tables("test"), configs.get(0).get(AccessSourceTaskConfig.TABLES_CONFIG));
+    assertNull(configs.get(0).get(AccessSourceTaskConfig.QUERY_CONFIG));
     connector.stop();
   }
 
@@ -213,12 +213,12 @@ public class JdbcSourceConnectorTest {
     assertEquals(3, configs.size());
     assertTaskConfigsHaveParentConfigs(configs);
 
-    assertEquals(tables("test1","test2"), configs.get(0).get(JdbcSourceTaskConfig.TABLES_CONFIG));
-    assertNull(configs.get(0).get(JdbcSourceTaskConfig.QUERY_CONFIG));
-    assertEquals(tables("test3"), configs.get(1).get(JdbcSourceTaskConfig.TABLES_CONFIG));
-    assertNull(configs.get(1).get(JdbcSourceTaskConfig.QUERY_CONFIG));
-    assertEquals(tables("test4"), configs.get(2).get(JdbcSourceTaskConfig.TABLES_CONFIG));
-    assertNull(configs.get(2).get(JdbcSourceTaskConfig.QUERY_CONFIG));
+    assertEquals(tables("test1","test2"), configs.get(0).get(AccessSourceTaskConfig.TABLES_CONFIG));
+    assertNull(configs.get(0).get(AccessSourceTaskConfig.QUERY_CONFIG));
+    assertEquals(tables("test3"), configs.get(1).get(AccessSourceTaskConfig.TABLES_CONFIG));
+    assertNull(configs.get(1).get(AccessSourceTaskConfig.QUERY_CONFIG));
+    assertEquals(tables("test4"), configs.get(2).get(AccessSourceTaskConfig.TABLES_CONFIG));
+    assertNull(configs.get(2).get(AccessSourceTaskConfig.QUERY_CONFIG));
 
     connector.stop();
   }
@@ -229,14 +229,14 @@ public class JdbcSourceConnectorTest {
     db.createTable("test1", "id", "INT NOT NULL");
     db.createTable("test2", "id", "INT NOT NULL");
     final String sample_query = "SELECT foo, bar FROM sample_table";
-    props.put(JdbcSourceConnectorConfig.QUERY_CONFIG, sample_query);
+    props.put(AccessSourceConnectorConfig.QUERY_CONFIG, sample_query);
     connector.start(props);
     List<Map<String, String>> configs = connector.taskConfigs(3);
     assertEquals(1, configs.size());
     assertTaskConfigsHaveParentConfigs(configs);
 
-    assertEquals("", configs.get(0).get(JdbcSourceTaskConfig.TABLES_CONFIG));
-    assertEquals(sample_query, configs.get(0).get(JdbcSourceTaskConfig.QUERY_CONFIG));
+    assertEquals("", configs.get(0).get(AccessSourceTaskConfig.TABLES_CONFIG));
+    assertEquals(sample_query, configs.get(0).get(AccessSourceTaskConfig.QUERY_CONFIG));
 
     connector.stop();
   }
@@ -244,15 +244,15 @@ public class JdbcSourceConnectorTest {
   @Test(expected = ConnectException.class)
   public void testConflictingQueryTableSettings() {
     final String sample_query = "SELECT foo, bar FROM sample_table";
-    props.put(JdbcSourceConnectorConfig.QUERY_CONFIG, sample_query);
-    props.put(JdbcSourceConnectorConfig.TABLE_WHITELIST_CONFIG, "foo,bar");
+    props.put(AccessSourceConnectorConfig.QUERY_CONFIG, sample_query);
+    props.put(AccessSourceConnectorConfig.TABLE_WHITELIST_CONFIG, "foo,bar");
     connector.start(props);
   }
 
   private void assertTaskConfigsHaveParentConfigs(List<Map<String, String>> configs) {
     for (Map<String, String> config : configs) {
       assertEquals(this.db.getUrl(),
-                   config.get(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG));
+                   config.get(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG));
     }
   }
 
@@ -260,41 +260,41 @@ public class JdbcSourceConnectorTest {
   @Test
   public void testSqlServerIsolationModeWithCorrectDialect() {
 
-    props.put(JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG, "SQL_SERVER_SNAPSHOT");
-    props.put(JdbcSourceConnectorConfig.DIALECT_NAME_CONFIG, "SqlServerDatabaseDialect");
+    props.put(AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG, "SQL_SERVER_SNAPSHOT");
+    props.put(AccessSourceConnectorConfig.DIALECT_NAME_CONFIG, "SqlServerDatabaseDialect");
 
     Config config = connector.validate(props);
     HashMap<String, ConfigValue> configValues = new HashMap<>();
     config.configValues().stream()
             .filter((configValue) ->
                     configValue.name().equals(
-                            JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
+                            AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
                     )
             ).forEach(configValue -> configValues.putIfAbsent(configValue.name(), configValue));
 
     assertTrue(
             configValues.get(
-                    JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
+                    AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
             ).errorMessages().isEmpty()
     );
   }
 
   @Test
   public void testSqlServerIsolationModeIncorrectDialect() {
-    props.put(JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG, "SQL_SERVER_SNAPSHOT");
-    props.put(JdbcSourceConnectorConfig.DIALECT_NAME_CONFIG, "MySqlDatabaseDialect");
+    props.put(AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG, "SQL_SERVER_SNAPSHOT");
+    props.put(AccessSourceConnectorConfig.DIALECT_NAME_CONFIG, "MySqlDatabaseDialect");
 
     Config config = connector.validate(props);
     HashMap<String, ConfigValue> configValues = new HashMap<>();
     config.configValues().stream()
             .filter((configValue) ->
                     configValue.name().equals(
-                            JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
+                            AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
                     )
             ).forEach(configValue -> configValues.putIfAbsent(configValue.name(), configValue));
 
     List<String> errors = configValues.get(
-            JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
+            AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
     ).errorMessages();
     assertFalse(errors.isEmpty());
     assertEquals(1, errors.size());
@@ -312,21 +312,21 @@ public class JdbcSourceConnectorTest {
     sqlServerConnectionUrlTypes.add("jdbc:jtds:sqlserver://localhost;user=Me");
 
     for (String urlType : sqlServerConnectionUrlTypes) {
-      props.put(JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG, "SQL_SERVER_SNAPSHOT");
-      props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, urlType);
+      props.put(AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG, "SQL_SERVER_SNAPSHOT");
+      props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, urlType);
 
       Config config = connector.validate(props);
       HashMap<String, ConfigValue> configValues = new HashMap<>();
       config.configValues().stream()
               .filter((configValue) ->
                       configValue.name().equals(
-                              JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
+                              AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
                       )
               ).forEach(configValue -> configValues.putIfAbsent(configValue.name(), configValue));
 
       assertTrue(
               configValues.get(
-                      JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
+                      AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
               ).errorMessages().isEmpty()
       );
     }
@@ -334,20 +334,20 @@ public class JdbcSourceConnectorTest {
 
   @Test
   public void testSqlServerIsolationModeWithIncorrectUrl() {
-    props.put(JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG, "SQL_SERVER_SNAPSHOT");
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, "jdbc:mysql://localhost:3306/sakila?profileSQL=true");
+    props.put(AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG, "SQL_SERVER_SNAPSHOT");
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, "jdbc:mysql://localhost:3306/sakila?profileSQL=true");
 
     Config config = connector.validate(props);
     HashMap<String, ConfigValue> configValues = new HashMap<>();
     config.configValues().stream()
             .filter((configValue) ->
                     configValue.name().equals(
-                            JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
+                            AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
                     )
             ).forEach(configValue -> configValues.putIfAbsent(configValue.name(), configValue));
 
     List<String> errors = configValues.get(
-            JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
+            AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
     ).errorMessages();
     assertFalse(errors.isEmpty());
     assertEquals(1, errors.size());

@@ -75,11 +75,11 @@ import io.confluent.connect.jdbc.sink.metadata.FieldsMetadata;
 import io.confluent.connect.jdbc.sink.metadata.SchemaPair;
 import io.confluent.connect.jdbc.sink.metadata.SinkRecordField;
 import io.confluent.connect.jdbc.source.ColumnMapping;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.NumericMapping;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TimestampGranularity;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TransactionIsolationMode;
-import io.confluent.connect.jdbc.source.JdbcSourceTaskConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.NumericMapping;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TimestampGranularity;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TransactionIsolationMode;
+import io.confluent.connect.jdbc.source.AccessSourceTaskConfig;
 import io.confluent.connect.jdbc.source.TimestampIncrementingCriteria;
 import io.confluent.connect.jdbc.util.ColumnDefinition;
 import io.confluent.connect.jdbc.util.ColumnDefinition.Mutability;
@@ -156,7 +156,7 @@ public class GenericDatabaseDialect implements DatabaseDialect {
   private volatile JdbcDriverInfo jdbcDriverInfo;
   private final int batchMaxRows;
   private final TimeZone timeZone;
-  private final JdbcSourceConnectorConfig.TimestampGranularity tsGranularity;
+  private final AccessSourceConnectorConfig.TimestampGranularity tsGranularity;
 
   /**
    * Create a new dialect instance with the given connector configuration.
@@ -180,42 +180,42 @@ public class GenericDatabaseDialect implements DatabaseDialect {
   ) {
     this.config = config;
     this.defaultIdentifierRules = defaultIdentifierRules;
-    this.jdbcUrl = config.getString(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG);
+    this.jdbcUrl = config.getString(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG);
     this.jdbcUrlInfo = DatabaseDialects.extractJdbcUrlInfo(jdbcUrl);
     if (config instanceof JdbcSinkConfig) {
       JdbcSinkConfig sinkConfig = (JdbcSinkConfig) config;
-      catalogPattern = JdbcSourceTaskConfig.CATALOG_PATTERN_DEFAULT;
-      schemaPattern = JdbcSourceTaskConfig.SCHEMA_PATTERN_DEFAULT;
+      catalogPattern = AccessSourceTaskConfig.CATALOG_PATTERN_DEFAULT;
+      schemaPattern = AccessSourceTaskConfig.SCHEMA_PATTERN_DEFAULT;
       tableTypes = sinkConfig.tableTypeNames();
       quoteSqlIdentifiers = QuoteMethod.get(
           config.getString(JdbcSinkConfig.QUOTE_SQL_IDENTIFIERS_CONFIG)
       );
     } else {
-      catalogPattern = config.getString(JdbcSourceTaskConfig.CATALOG_PATTERN_CONFIG);
-      schemaPattern = config.getString(JdbcSourceTaskConfig.SCHEMA_PATTERN_CONFIG);
-      tableTypes = new HashSet<>(config.getList(JdbcSourceTaskConfig.TABLE_TYPE_CONFIG));
+      catalogPattern = config.getString(AccessSourceTaskConfig.CATALOG_PATTERN_CONFIG);
+      schemaPattern = config.getString(AccessSourceTaskConfig.SCHEMA_PATTERN_CONFIG);
+      tableTypes = new HashSet<>(config.getList(AccessSourceTaskConfig.TABLE_TYPE_CONFIG));
       quoteSqlIdentifiers = QuoteMethod.get(
-          config.getString(JdbcSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_CONFIG)
+          config.getString(AccessSourceConnectorConfig.QUOTE_SQL_IDENTIFIERS_CONFIG)
       );
     }
-    if (config instanceof JdbcSourceConnectorConfig) {
-      mapNumerics = ((JdbcSourceConnectorConfig)config).numericMapping();
-      batchMaxRows = config.getInt(JdbcSourceConnectorConfig.BATCH_MAX_ROWS_CONFIG);
+    if (config instanceof AccessSourceConnectorConfig) {
+      mapNumerics = ((AccessSourceConnectorConfig)config).numericMapping();
+      batchMaxRows = config.getInt(AccessSourceConnectorConfig.BATCH_MAX_ROWS_CONFIG);
     } else {
       mapNumerics = NumericMapping.NONE;
       batchMaxRows = 0;
     }
 
-    if (config instanceof JdbcSourceConnectorConfig) {
-      timeZone = ((JdbcSourceConnectorConfig) config).timeZone();
+    if (config instanceof AccessSourceConnectorConfig) {
+      timeZone = ((AccessSourceConnectorConfig) config).timeZone();
     } else if (config instanceof JdbcSinkConfig) {
       timeZone = ((JdbcSinkConfig) config).timeZone;
     } else {
       timeZone = TimeZone.getTimeZone(ZoneOffset.UTC);
     }
 
-    if (config instanceof JdbcSourceConnectorConfig) {
-      tsGranularity = TimestampGranularity.get((JdbcSourceConnectorConfig) config);
+    if (config instanceof AccessSourceConnectorConfig) {
+      tsGranularity = TimestampGranularity.get((AccessSourceConnectorConfig) config);
     } else {
       tsGranularity = TimestampGranularity.CONNECT_LOGICAL;
     }
@@ -233,8 +233,8 @@ public class GenericDatabaseDialect implements DatabaseDialect {
   @Override
   public Connection getConnection() throws SQLException {
     // These config names are the same for both source and sink configs ...
-    String username = config.getString(JdbcSourceConnectorConfig.CONNECTION_USER_CONFIG);
-    Password dbPassword = config.getPassword(JdbcSourceConnectorConfig.CONNECTION_PASSWORD_CONFIG);
+    String username = config.getString(AccessSourceConnectorConfig.CONNECTION_USER_CONFIG);
+    Password dbPassword = config.getPassword(AccessSourceConnectorConfig.CONNECTION_PASSWORD_CONFIG);
     Properties properties = new Properties();
     if (username != null) {
       properties.setProperty("user", username);
@@ -351,8 +351,8 @@ public class GenericDatabaseDialect implements DatabaseDialect {
     // Get the set of config keys that are known to the connector
     Set<String> configKeys = config.values().keySet();
     // Add any configuration property that begins with 'connection.` and that is not known
-    config.originalsWithPrefix(JdbcSourceConnectorConfig.CONNECTION_PREFIX).forEach((k,v) -> {
-      if (!configKeys.contains(JdbcSourceConnectorConfig.CONNECTION_PREFIX + k)) {
+    config.originalsWithPrefix(AccessSourceConnectorConfig.CONNECTION_PREFIX).forEach((k, v) -> {
+      if (!configKeys.contains(AccessSourceConnectorConfig.CONNECTION_PREFIX + k)) {
         properties.put(k, v);
       }
     });
@@ -376,7 +376,7 @@ public class GenericDatabaseDialect implements DatabaseDialect {
    * created but before it is returned/used.
    *
    * <p>By default this method sets the {@link PreparedStatement#setFetchSize(int) fetch size} to
-   * the {@link JdbcSourceConnectorConfig#BATCH_MAX_ROWS_CONFIG batch size} of the connector.
+   * the {@link AccessSourceConnectorConfig#BATCH_MAX_ROWS_CONFIG batch size} of the connector.
    * This will provide a hint to the JDBC driver as to the number of rows to fetch from the database
    * in an attempt to limit memory usage when reading from large tables. Driver implementations
    * often require further configuration to make use of the fetch size.

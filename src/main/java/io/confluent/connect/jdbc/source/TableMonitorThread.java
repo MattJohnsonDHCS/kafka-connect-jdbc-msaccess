@@ -136,12 +136,12 @@ public class TableMonitorThread extends Thread {
     if (!duplicates.isEmpty()) {
       String configText;
       if (whitelist != null) {
-        configText = "'" + JdbcSourceConnectorConfig.TABLE_WHITELIST_CONFIG + "'";
+        configText = "'" + AccessSourceConnectorConfig.TABLE_WHITELIST_CONFIG + "'";
       } else if (blacklist != null) {
-        configText = "'" + JdbcSourceConnectorConfig.TABLE_BLACKLIST_CONFIG + "'";
+        configText = "'" + AccessSourceConnectorConfig.TABLE_BLACKLIST_CONFIG + "'";
       } else {
-        configText = "'" + JdbcSourceConnectorConfig.TABLE_WHITELIST_CONFIG + "' or '"
-            + JdbcSourceConnectorConfig.TABLE_BLACKLIST_CONFIG + "'";
+        configText = "'" + AccessSourceConnectorConfig.TABLE_WHITELIST_CONFIG + "' or '"
+            + AccessSourceConnectorConfig.TABLE_BLACKLIST_CONFIG + "'";
       }
       String msg = "The connector uses the unqualified table name as the topic name and has "
           + "detected duplicate unqualified table names. This could lead to mixed data types in "

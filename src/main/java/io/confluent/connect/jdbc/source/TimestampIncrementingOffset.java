@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class TimestampIncrementingOffset {
-  private static final Logger log = LoggerFactory.getLogger(JdbcSourceTask.class);
+  private static final Logger log = LoggerFactory.getLogger(AccessSourceTask.class);
   static final String INCREMENTING_FIELD = "incrementing";
   static final String TIMESTAMP_FIELD = "timestamp";
   static final String TIMESTAMP_NANOS_FIELD = "timestamp_nanos";

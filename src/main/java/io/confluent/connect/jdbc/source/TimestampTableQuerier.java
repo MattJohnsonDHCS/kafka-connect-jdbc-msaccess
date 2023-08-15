@@ -33,7 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.confluent.connect.jdbc.dialect.DatabaseDialect;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TimestampGranularity;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TimestampGranularity;
 import io.confluent.connect.jdbc.source.SchemaMapping.FieldSetter;
 
 /**

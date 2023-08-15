@@ -37,17 +37,17 @@ import io.confluent.connect.jdbc.integration.BaseConnectorIT;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 
 import static org.junit.Assert.assertEquals;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.CONNECTION_USER_CONFIG;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.CONNECTION_PASSWORD_CONFIG;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TABLE_WHITELIST_CONFIG;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.MODE_CONFIG;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.MODE_TIMESTAMP;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.MODE_TIMESTAMP_INCREMENTING;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.INCREMENTING_COLUMN_NAME_CONFIG;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TIMESTAMP_COLUMN_NAME_CONFIG;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG;
-import static io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.POLL_INTERVAL_MS_CONFIG;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.CONNECTION_URL_CONFIG;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.CONNECTION_USER_CONFIG;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.CONNECTION_PASSWORD_CONFIG;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TABLE_WHITELIST_CONFIG;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.MODE_CONFIG;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.MODE_TIMESTAMP;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.MODE_TIMESTAMP_INCREMENTING;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.INCREMENTING_COLUMN_NAME_CONFIG;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TIMESTAMP_COLUMN_NAME_CONFIG;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG;
+import static io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.POLL_INTERVAL_MS_CONFIG;
 
 import static org.apache.kafka.connect.runtime.ConnectorConfig.CONNECTOR_CLASS_CONFIG;
 import static org.apache.kafka.connect.runtime.ConnectorConfig.KEY_CONVERTER_CLASS_CONFIG;

@@ -27,9 +27,9 @@ import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
 import io.confluent.common.utils.IntegrationTest;
-import io.confluent.connect.jdbc.JdbcSourceConnector;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
-import io.confluent.connect.jdbc.source.JdbcSourceTaskConfig;
+import io.confluent.connect.jdbc.AccessSourceConnector;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceTaskConfig;
 
 import static org.apache.kafka.connect.runtime.ConnectorConfig.TASKS_MAX_CONFIG;
 
@@ -52,14 +52,14 @@ public class PauseResumeIT {
   @Before
   public void before() throws Exception {
     props = new HashMap<>();
-    props.put(ConnectorConfig.CONNECTOR_CLASS_CONFIG, JdbcSourceConnector.class.getName());
+    props.put(ConnectorConfig.CONNECTOR_CLASS_CONFIG, AccessSourceConnector.class.getName());
     props.put(TASKS_MAX_CONFIG, "1");
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, dbRule.getURL());
-    props.put(JdbcSourceConnectorConfig.CONNECTION_USER_CONFIG, "root");
-    props.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_INCREMENTING);
-    props.put(JdbcSourceConnectorConfig.INCREMENTING_COLUMN_NAME_CONFIG, "id");
-    props.put(JdbcSourceConnectorConfig.POLL_INTERVAL_MS_CONFIG, Long.toString(POLLING_INTERVAL_MS));
-    props.put(JdbcSourceTaskConfig.TOPIC_PREFIX_CONFIG, "topic_");
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, dbRule.getURL());
+    props.put(AccessSourceConnectorConfig.CONNECTION_USER_CONFIG, "root");
+    props.put(AccessSourceConnectorConfig.MODE_CONFIG, AccessSourceConnectorConfig.MODE_INCREMENTING);
+    props.put(AccessSourceConnectorConfig.INCREMENTING_COLUMN_NAME_CONFIG, "id");
+    props.put(AccessSourceConnectorConfig.POLL_INTERVAL_MS_CONFIG, Long.toString(POLLING_INTERVAL_MS));
+    props.put(AccessSourceTaskConfig.TOPIC_PREFIX_CONFIG, "topic_");
 
     connect = new EmbeddedConnectCluster.Builder()
         .name("connect-cluster")
