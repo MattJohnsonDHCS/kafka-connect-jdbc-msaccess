@@ -753,9 +753,27 @@ public class GenericDatabaseDialect implements DatabaseDialect {
     Map<ColumnId, ColumnDefinition> result = new LinkedHashMap<>();
     for (int i = 1; i <= rsMetadata.getColumnCount(); ++i) {
       ColumnDefinition defn = describeColumn(rsMetadata, i);
-      result.put(defn.id(), defn);
+      ColumnId transformedColumnId = new ColumnId(defn.id().tableId(),transformColumnName(defn.id().name()));
+      ColumnDefinition transformedDef = new ColumnDefinition(transformedColumnId, defn.type(), defn.typeName(),
+              defn.classNameForType(), defn.nullability(), defn.mutability(), defn.precision(), defn.scale(),
+              defn.isSignedNumber(), defn.displaySize(), defn.isAutoIncrement(), defn.isCaseSensitive(),
+              defn.isSearchable(), defn.isCurrency(), defn.isPrimaryKey());
+      result.put(transformedDef.id(), transformedDef);
     }
     return result;
+  }
+
+  private String transformColumnName(String input) {
+    input = input.replace("-", "_").replace(" "
+            ,"_").replace("/","_");
+    if(Character.isDigit(input.charAt(0))) {
+      for (int i = 0; i < input.length(); i++) {
+        if (Character.isLetter(input.charAt(i))) {
+          return input.substring(i) + "_" + input.substring(0, i);
+        }
+      }
+    }
+    return input;
   }
 
   /**

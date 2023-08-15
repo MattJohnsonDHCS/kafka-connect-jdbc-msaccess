@@ -59,7 +59,7 @@ public class AccessSourceTask extends SourceTask {
   private DatabaseDialect dialect;
   //Visible for Testing
   Connection connection;
-  List<TableQuerier> tableQuerierList = new ArrayList<>();
+  List<BulkTableQuerier> tableQuerierList = new ArrayList<>();
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final AtomicLong taskThreadId = new AtomicLong(0);
 
@@ -178,7 +178,7 @@ public class AccessSourceTask extends SourceTask {
 
       }
 
-      for (TableQuerier querier : tableQuerierList) {
+      for (BulkTableQuerier querier : tableQuerierList) {
 
         if (!querier.querying()) {
           // If not in the middle of an update, wait for next update time
