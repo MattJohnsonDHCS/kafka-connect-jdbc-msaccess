@@ -98,7 +98,7 @@ public class BulkTableQuerier extends TableQuerier {
     final Map<String, String> partition;
     switch (mode) {
       case TABLE:
-        String name = tableId.tableName().replace(" ", "_").replace("-", "_"); // backwards compatible
+        String name = tableId.tableName(); // backwards compatible
         partition = Collections.singletonMap(AccessSourceConnectorConstants.TABLE_NAME_KEY, name);
         topic = topicPrefix + name;
         break;

@@ -99,7 +99,8 @@ abstract class TableQuerier implements Comparable<TableQuerier> {
       this.db = db;
       stmt = getOrCreatePreparedStatement(db);
       resultSet = executeQuery();
-      String schemaName = tableId != null ? tableId.tableName().replace(" ", "_").replace("-", "_") : null;       schemaMapping = SchemaMapping.create(schemaName, resultSet.getMetaData(), dialect);
+      String schemaName = tableId != null ? tableId.tableName() : null; // backwards compatible
+      schemaMapping = SchemaMapping.create(schemaName, resultSet.getMetaData(), dialect);
     } else {
       log.trace("Current ResultSet {} isn't null. Continuing to seek.", resultSet.hashCode());
     }
