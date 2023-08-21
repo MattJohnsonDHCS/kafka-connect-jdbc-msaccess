@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.confluent.connect.jdbc.source.ColumnMapping;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
 import io.confluent.connect.jdbc.util.ColumnDefinition;
 import io.confluent.connect.jdbc.util.ColumnId;
 import io.confluent.connect.jdbc.util.TableId;
@@ -61,7 +61,7 @@ public abstract class BaseDialectTypeTest<T extends GenericDatabaseDialect> {
   public Object expectedValue;
 
   @Parameterized.Parameter(2)
-  public JdbcSourceConnectorConfig.NumericMapping numMapping;
+  public AccessSourceConnectorConfig.NumericMapping numMapping;
 
   @Parameterized.Parameter(3)
   public boolean optional;
@@ -167,23 +167,23 @@ public abstract class BaseDialectTypeTest<T extends GenericDatabaseDialect> {
   protected abstract T createDialect();
 
   /**
-   * Create a {@link JdbcSourceConnectorConfig} with the specified URL and optional config props.
+   * Create a {@link AccessSourceConnectorConfig} with the specified URL and optional config props.
    *
    * @param url           the database URL; may not be null
    * @param propertyPairs optional set of config name-value pairs; must be an even number
    * @return the config; never null
    */
-  protected JdbcSourceConnectorConfig sourceConfigWithUrl(
+  protected AccessSourceConnectorConfig sourceConfigWithUrl(
       String url,
       String... propertyPairs
   ) {
     Map<String, String> connProps = new HashMap<>();
-    connProps.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
-    connProps.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "test-");
+    connProps.put(AccessSourceConnectorConfig.MODE_CONFIG, AccessSourceConnectorConfig.MODE_BULK);
+    connProps.put(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "test-");
     connProps.putAll(propertiesFromPairs(propertyPairs));
-    connProps.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, url);
-    connProps.put(JdbcSourceConnectorConfig.NUMERIC_MAPPING_CONFIG, numMapping.toString());
-    return new JdbcSourceConnectorConfig(connProps);
+    connProps.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, url);
+    connProps.put(AccessSourceConnectorConfig.NUMERIC_MAPPING_CONFIG, numMapping.toString());
+    return new AccessSourceConnectorConfig(connProps);
   }
 
   protected Map<String, String> propertiesFromPairs(String... pairs) {

@@ -193,7 +193,7 @@ public class TimestampIncrementingCriteria {
       Schema schema,
       Struct record,
       TimestampIncrementingOffset previousOffset,
-      JdbcSourceConnectorConfig.TimestampGranularity timestampGranularity
+      AccessSourceConnectorConfig.TimestampGranularity timestampGranularity
   ) {
     Timestamp extractedTimestamp = null;
     if (hasTimestampColumns()) {
@@ -226,7 +226,7 @@ public class TimestampIncrementingCriteria {
   protected Timestamp extractOffsetTimestamp(
       Schema schema,
       Struct record,
-      JdbcSourceConnectorConfig.TimestampGranularity timestampGranularity
+      AccessSourceConnectorConfig.TimestampGranularity timestampGranularity
   ) {
     caseAdjustedTimestampColumns.computeIfAbsent(schema, this::findCaseSensitiveTimestampColumns);
     for (String timestampColumn : caseAdjustedTimestampColumns.get(schema)) {

@@ -32,7 +32,7 @@ import io.confluent.connect.jdbc.sink.metadata.FieldsMetadata;
 import io.confluent.connect.jdbc.sink.metadata.SchemaPair;
 import io.confluent.connect.jdbc.sink.metadata.SinkRecordField;
 import io.confluent.connect.jdbc.source.ColumnMapping;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TransactionIsolationMode;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TransactionIsolationMode;
 import io.confluent.connect.jdbc.source.TimestampIncrementingCriteria;
 import io.confluent.connect.jdbc.util.ColumnDefinition;
 import io.confluent.connect.jdbc.util.ColumnId;

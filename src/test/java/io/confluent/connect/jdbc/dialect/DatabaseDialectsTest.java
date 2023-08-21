@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
 
 import static junit.framework.TestCase.assertSame;
 import static org.junit.Assert.fail;
@@ -115,10 +115,10 @@ public class DatabaseDialectsTest {
       String url
   ) {
     Map<String, String> props = new HashMap<>();
-    props.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, url);
-    props.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "prefix");
-    props.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
-    JdbcSourceConnectorConfig config = new JdbcSourceConnectorConfig(props);
+    props.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, url);
+    props.put(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "prefix");
+    props.put(AccessSourceConnectorConfig.MODE_CONFIG, AccessSourceConnectorConfig.MODE_BULK);
+    AccessSourceConnectorConfig config = new AccessSourceConnectorConfig(props);
     DatabaseDialect dialect = DatabaseDialects.findBestFor(url, config);
     assertSame(dialect.getClass(), clazz);
   }

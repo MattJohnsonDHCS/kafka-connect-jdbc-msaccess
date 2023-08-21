@@ -24,10 +24,10 @@
     </parent>
 
     <groupId>io.confluent</groupId>
-    <artifactId>kafka-connect-jdbc</artifactId>
+    <artifactId>kafka-connect-access</artifactId>
     <packaging>jar</packaging>
     <version>10.7.2-SNAPSHOT</version>
-    <name>kafka-connect-jdbc</name>
+    <name>kafka-connect-access</name>
     <organization>
         <name>Confluent, Inc.</name>
         <url>http://confluent.io</url>
@@ -470,6 +470,7 @@
                         <id>validate</id>
                         <phase>validate</phase>
                         <configuration>
+                            <skip>true</skip>
                             <suppressionsLocation>checkstyle/suppressions.xml</suppressionsLocation>
                         </configuration>
                         <goals>

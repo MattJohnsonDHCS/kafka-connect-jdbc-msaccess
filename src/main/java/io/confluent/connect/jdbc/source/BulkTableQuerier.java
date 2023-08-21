@@ -98,13 +98,16 @@ public class BulkTableQuerier extends TableQuerier {
     final Map<String, String> partition;
     switch (mode) {
       case TABLE:
-        String name = tableId.tableName(); // backwards compatible
-        partition = Collections.singletonMap(JdbcSourceConnectorConstants.TABLE_NAME_KEY, name);
+        String name = tableId.tableName();
+        for(String illegalCharacter: ILLEGAL_TABLE_CHARACTERS) {
+          name = name.replace(illegalCharacter, "_");
+        }
+        partition = Collections.singletonMap(AccessSourceConnectorConstants.TABLE_NAME_KEY, name);
         topic = topicPrefix + name;
         break;
       case QUERY:
-        partition = Collections.singletonMap(JdbcSourceConnectorConstants.QUERY_NAME_KEY,
-                                             JdbcSourceConnectorConstants.QUERY_NAME_VALUE
+        partition = Collections.singletonMap(AccessSourceConnectorConstants.QUERY_NAME_KEY,
+                                             AccessSourceConnectorConstants.QUERY_NAME_VALUE
         );
         topic = topicPrefix;
         break;

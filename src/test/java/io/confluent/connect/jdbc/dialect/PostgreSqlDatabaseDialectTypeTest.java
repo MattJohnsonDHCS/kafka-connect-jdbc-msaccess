@@ -14,7 +14,7 @@
 
 package io.confluent.connect.jdbc.dialect;
 
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
 import org.apache.kafka.connect.data.Schema;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -38,10 +38,10 @@ public class PostgreSqlDatabaseDialectTypeTest extends BaseDialectTypeTest<Postg
     return Arrays.asList(
         new Object[][] {
             // UUID - non optional
-            {Schema.Type.STRING, UUID_VALUE, JdbcSourceConnectorConfig.NumericMapping.NONE, NOT_NULLABLE, Types.OTHER, 0, 0, UUID.class.getName() },
+            {Schema.Type.STRING, UUID_VALUE, AccessSourceConnectorConfig.NumericMapping.NONE, NOT_NULLABLE, Types.OTHER, 0, 0, UUID.class.getName() },
 
             // UUID - optional
-            {Schema.Type.STRING, UUID_VALUE, JdbcSourceConnectorConfig.NumericMapping.NONE, NULLABLE, Types.OTHER, 0, 0, UUID.class.getName() },
+            {Schema.Type.STRING, UUID_VALUE, AccessSourceConnectorConfig.NumericMapping.NONE, NULLABLE, Types.OTHER, 0, 0, UUID.class.getName() },
         }
     );
   }

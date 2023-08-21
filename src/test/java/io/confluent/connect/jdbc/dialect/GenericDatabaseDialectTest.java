@@ -16,7 +16,6 @@
 package io.confluent.connect.jdbc.dialect;
 
 import org.apache.kafka.common.config.AbstractConfig;
-import org.apache.kafka.common.config.ConfigException;
 import org.apache.kafka.connect.data.Date;
 import org.apache.kafka.connect.data.Decimal;
 import org.apache.kafka.connect.data.Schema;
@@ -48,7 +47,7 @@ import io.confluent.connect.jdbc.sink.JdbcSinkConfig;
 import io.confluent.connect.jdbc.sink.SqliteHelper;
 import io.confluent.connect.jdbc.sink.metadata.SinkRecordField;
 import io.confluent.connect.jdbc.source.EmbeddedDerby;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
 import io.confluent.connect.jdbc.util.ColumnDefinition;
 import io.confluent.connect.jdbc.util.ColumnId;
 import io.confluent.connect.jdbc.util.ConnectionProvider;
@@ -81,7 +80,7 @@ public class GenericDatabaseDialectTest extends BaseDialectTest<GenericDatabaseD
 
   private final SqliteHelper sqliteHelper = new SqliteHelper(getClass().getSimpleName());
   private Map<String, String> connProps;
-  private JdbcSourceConnectorConfig config;
+  private AccessSourceConnectorConfig config;
   private JdbcSinkConfig sinkConfig;
   private EmbeddedDerby db;
   private ConnectionProvider connectionProvider;
@@ -91,9 +90,9 @@ public class GenericDatabaseDialectTest extends BaseDialectTest<GenericDatabaseD
   public void setup() throws Exception {
     db = new EmbeddedDerby();
     connProps = new HashMap<>();
-    connProps.put(JdbcSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
-    connProps.put(JdbcSourceConnectorConfig.MODE_CONFIG, JdbcSourceConnectorConfig.MODE_BULK);
-    connProps.put(JdbcSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "test-");
+    connProps.put(AccessSourceConnectorConfig.CONNECTION_URL_CONFIG, db.getUrl());
+    connProps.put(AccessSourceConnectorConfig.MODE_CONFIG, AccessSourceConnectorConfig.MODE_BULK);
+    connProps.put(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG, "test-");
     newDialectFor(null, null);
     super.setup();
     connectionProvider = dialect;
@@ -122,16 +121,16 @@ public class GenericDatabaseDialectTest extends BaseDialectTest<GenericDatabaseD
       String schemaPattern
   ) {
     if (schemaPattern != null) {
-      connProps.put(JdbcSourceConnectorConfig.SCHEMA_PATTERN_CONFIG, schemaPattern);
+      connProps.put(AccessSourceConnectorConfig.SCHEMA_PATTERN_CONFIG, schemaPattern);
     } else {
-      connProps.remove(JdbcSourceConnectorConfig.SCHEMA_PATTERN_CONFIG);
+      connProps.remove(AccessSourceConnectorConfig.SCHEMA_PATTERN_CONFIG);
     }
     if (tableTypes != null) {
-      connProps.put(JdbcSourceConnectorConfig.TABLE_TYPE_CONFIG, StringUtils.join(tableTypes, ","));
+      connProps.put(AccessSourceConnectorConfig.TABLE_TYPE_CONFIG, StringUtils.join(tableTypes, ","));
     } else {
-      connProps.remove(JdbcSourceConnectorConfig.TABLE_TYPE_CONFIG);
+      connProps.remove(AccessSourceConnectorConfig.TABLE_TYPE_CONFIG);
     }
-    config = new JdbcSourceConnectorConfig(connProps);
+    config = new AccessSourceConnectorConfig(connProps);
     dialect = createDialect(config);
     return dialect;
   }
@@ -534,32 +533,32 @@ public class GenericDatabaseDialectTest extends BaseDialectTest<GenericDatabaseD
 
     // READ_UNCOMMITTED
     dialect.setConnectionIsolationMode(conn,
-            JdbcSourceConnectorConfig.TransactionIsolationMode.READ_UNCOMMITTED
+            AccessSourceConnectorConfig.TransactionIsolationMode.READ_UNCOMMITTED
     );
     assertEquals(conn.getTransactionIsolation(), Connection.TRANSACTION_READ_UNCOMMITTED);
 
     // READ_COMMITTED
     dialect.setConnectionIsolationMode(conn,
-            JdbcSourceConnectorConfig.TransactionIsolationMode.READ_COMMITTED
+            AccessSourceConnectorConfig.TransactionIsolationMode.READ_COMMITTED
     );
     assertEquals(conn.getTransactionIsolation(), Connection.TRANSACTION_READ_COMMITTED);
 
     // REPEATABLE READ
     dialect.setConnectionIsolationMode(conn,
-            JdbcSourceConnectorConfig.TransactionIsolationMode.REPEATABLE_READ
+            AccessSourceConnectorConfig.TransactionIsolationMode.REPEATABLE_READ
     );
     assertEquals(conn.getTransactionIsolation(), Connection.TRANSACTION_REPEATABLE_READ);
 
     // SERIALIZABLE
     dialect.setConnectionIsolationMode(conn,
-            JdbcSourceConnectorConfig.TransactionIsolationMode.SERIALIZABLE
+            AccessSourceConnectorConfig.TransactionIsolationMode.SERIALIZABLE
     );
     assertEquals(conn.getTransactionIsolation(), Connection.TRANSACTION_SERIALIZABLE);
 
     // this transaction isolation mode is not supported. No error is expected.
     // Just a warning. Old isolation mode is maintained.
     dialect.setConnectionIsolationMode(conn,
-            JdbcSourceConnectorConfig.TransactionIsolationMode.SQL_SERVER_SNAPSHOT
+            AccessSourceConnectorConfig.TransactionIsolationMode.SQL_SERVER_SNAPSHOT
     );
     // confirm transaction isolation mode does not change.
     assertEquals(conn.getTransactionIsolation(), Connection.TRANSACTION_SERIALIZABLE);
@@ -624,7 +623,7 @@ public class GenericDatabaseDialectTest extends BaseDialectTest<GenericDatabaseD
     connProps.put("connection.foo", "bar");
     // and some other extra properties not prefixed with 'connection.'
     connProps.put("foo2", "bar2");
-    config = new JdbcSourceConnectorConfig(connProps);
+    config = new AccessSourceConnectorConfig(connProps);
     dialect = createDialect(config);
     // and the dialect computes the connection properties
     Properties props = new Properties();

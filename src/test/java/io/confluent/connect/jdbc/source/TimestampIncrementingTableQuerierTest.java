@@ -100,7 +100,7 @@ public class TimestampIncrementingTableQuerierTest {
         10211197100L, // Timestamp delay
         TimeZone.getTimeZone("UTC"),
         "",
-        JdbcSourceConnectorConfig.TimestampGranularity.CONNECT_LOGICAL
+        AccessSourceConnectorConfig.TimestampGranularity.CONNECT_LOGICAL
     );
   }
 

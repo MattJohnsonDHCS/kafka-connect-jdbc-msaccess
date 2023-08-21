@@ -35,7 +35,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.confluent.connect.jdbc.dialect.DatabaseDialect;
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig.TimestampGranularity;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig.TimestampGranularity;
 import io.confluent.connect.jdbc.source.SchemaMapping.FieldSetter;
 import io.confluent.connect.jdbc.source.TimestampIncrementingCriteria.CriteriaValues;
 import io.confluent.connect.jdbc.util.ColumnDefinition;
@@ -105,8 +105,8 @@ public class TimestampIncrementingTableQuerier extends TableQuerier implements C
         partition = OffsetProtocols.sourcePartitionForProtocolV1(tableId);
         break;
       case QUERY:
-        partition = Collections.singletonMap(JdbcSourceConnectorConstants.QUERY_NAME_KEY,
-            JdbcSourceConnectorConstants.QUERY_NAME_VALUE);
+        partition = Collections.singletonMap(AccessSourceConnectorConstants.QUERY_NAME_KEY,
+            AccessSourceConnectorConstants.QUERY_NAME_VALUE);
         topic = topicPrefix;
         break;
       default:

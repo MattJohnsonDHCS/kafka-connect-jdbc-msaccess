@@ -2,9 +2,9 @@ package io.confluent.connect.jdbc.source.integration;
 
 import static junit.framework.TestCase.assertTrue;
 
-import io.confluent.connect.jdbc.source.JdbcSourceConnectorConfig;
-import io.confluent.connect.jdbc.source.JdbcSourceTask;
-import io.confluent.connect.jdbc.source.JdbcSourceTaskConfig;
+import io.confluent.connect.jdbc.source.AccessSourceConnectorConfig;
+import io.confluent.connect.jdbc.source.AccessSourceTask;
+import io.confluent.connect.jdbc.source.AccessSourceTaskConfig;
 import java.util.Map;
 import org.junit.After;
 import org.junit.Test;
@@ -30,10 +30,10 @@ public abstract class BaseOOMIntegrationTest {
   protected abstract String buildLargeQuery();
 
   public Map<String, String> props;
-  public JdbcSourceTask task;
+  public AccessSourceTask task;
 
   public void startTask() {
-    task = new JdbcSourceTask();
+    task = new AccessSourceTask();
     task.start(props);
   }
 
@@ -46,9 +46,9 @@ public abstract class BaseOOMIntegrationTest {
 
   @Test
   public void testStreamingReads() throws InterruptedException {
-    props.put(JdbcSourceTaskConfig.TABLES_CONFIG, "");
-    props.put(JdbcSourceTaskConfig.TABLES_FETCHED, "true");
-    props.put(JdbcSourceConnectorConfig.QUERY_CONFIG, buildLargeQuery());
+    props.put(AccessSourceTaskConfig.TABLES_CONFIG, "");
+    props.put(AccessSourceTaskConfig.TABLES_FETCHED, "true");
+    props.put(AccessSourceConnectorConfig.QUERY_CONFIG, buildLargeQuery());
     startTask();
     assertTrue(task.poll().size() > 0);
   }

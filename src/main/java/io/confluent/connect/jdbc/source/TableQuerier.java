@@ -40,6 +40,7 @@ abstract class TableQuerier implements Comparable<TableQuerier> {
   }
 
   private final Logger log = LoggerFactory.getLogger(TableQuerier.class);
+  protected static final String[] ILLEGAL_TABLE_CHARACTERS = {"-"," ","/","(",")","$"};
 
   protected final DatabaseDialect dialect;
   protected final QueryMode mode;
@@ -98,9 +99,21 @@ abstract class TableQuerier implements Comparable<TableQuerier> {
     if (resultSet == null) {
       this.db = db;
       stmt = getOrCreatePreparedStatement(db);
-      resultSet = executeQuery();
-      String schemaName = tableId != null ? tableId.tableName() : null; // backwards compatible
-      schemaMapping = SchemaMapping.create(schemaName, resultSet.getMetaData(), dialect);
+      try {
+        resultSet = executeQuery();
+        String schemaName;
+        if(tableId != null) {
+          schemaName = tableId.tableName();
+          for(String illegalCharacter : ILLEGAL_TABLE_CHARACTERS) {
+            schemaName = schemaName.replace(illegalCharacter, "_");
+          }
+          schemaMapping = SchemaMapping.create(schemaName, resultSet.getMetaData(), dialect);
+        }
+      } catch (SQLException ex) {
+        log.error("SQL Error while attempting to execute query from prepared statement: {}. Skipping table.",
+                stmt.toString());
+        throw new SQLException(ex);
+      }
     } else {
       log.trace("Current ResultSet {} isn't null. Continuing to seek.", resultSet.hashCode());
     }

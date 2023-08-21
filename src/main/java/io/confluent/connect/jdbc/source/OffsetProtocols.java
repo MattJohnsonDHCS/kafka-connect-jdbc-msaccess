@@ -37,10 +37,10 @@ public class OffsetProtocols {
   public static Map<String, String> sourcePartitionForProtocolV1(TableId tableId) {
     String fqn = ExpressionBuilder.create().append(tableId, QuoteMethod.NEVER).toString();
     Map<String, String> partitionForV1 = new HashMap<>();
-    partitionForV1.put(JdbcSourceConnectorConstants.TABLE_NAME_KEY, fqn);
+    partitionForV1.put(AccessSourceConnectorConstants.TABLE_NAME_KEY, fqn);
     partitionForV1.put(
-        JdbcSourceConnectorConstants.OFFSET_PROTOCOL_VERSION_KEY,
-        JdbcSourceConnectorConstants.PROTOCOL_VERSION_ONE
+        AccessSourceConnectorConstants.OFFSET_PROTOCOL_VERSION_KEY,
+        AccessSourceConnectorConstants.PROTOCOL_VERSION_ONE
     );
     return partitionForV1;
   }
@@ -53,7 +53,7 @@ public class OffsetProtocols {
    */
   public static Map<String, String> sourcePartitionForProtocolV0(TableId tableId) {
     return Collections.singletonMap(
-        JdbcSourceConnectorConstants.TABLE_NAME_KEY,
+        AccessSourceConnectorConstants.TABLE_NAME_KEY,
         tableId.tableName()
     );
   }

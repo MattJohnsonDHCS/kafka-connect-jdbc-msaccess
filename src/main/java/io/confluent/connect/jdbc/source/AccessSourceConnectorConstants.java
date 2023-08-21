@@ -15,7 +15,7 @@
 
 package io.confluent.connect.jdbc.source;
 
-public class JdbcSourceConnectorConstants {
+public class AccessSourceConnectorConstants {
   public static final String TABLE_NAME_KEY = "table";
   public static final String QUERY_NAME_KEY = "query";
   public static final String QUERY_NAME_VALUE = "query";

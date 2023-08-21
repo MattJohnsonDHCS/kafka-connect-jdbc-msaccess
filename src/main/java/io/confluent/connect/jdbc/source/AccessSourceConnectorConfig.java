@@ -56,9 +56,25 @@ import org.apache.kafka.connect.errors.ConnectException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class JdbcSourceConnectorConfig extends AbstractConfig {
+public class AccessSourceConnectorConfig extends AbstractConfig {
 
-  private static final Logger LOG = LoggerFactory.getLogger(JdbcSourceConnectorConfig.class);
+  private static final Logger LOG = LoggerFactory.getLogger(AccessSourceConnectorConfig.class);
+  public static final String ACCESS_DIRECTORY_UNPROCESSED_PATH_CONFIG = "access.directory.unprocessed.path";
+  public static final String ACCESS_DIRECTORY_UNPROCESSED_PATH_DOC =
+          "File system directory where MSAcess DB files will be "
+          + "placed for connector processing."
+          + "(for example, ``access.directory.path: \"/Users/username/Documents/accessdbs\"``).";
+  public static final String ACCESS_DIRECTORY_UNPROCESSED_PATH_DISPLAY = "Access Directory Unprocessed Path";
+  public static final String ACCESS_DIRECTORY_UNPROCESSED_PATH_DEFAULT = "";
+
+  public static final String ACCESS_DIRECTORY_PROCESSED_PATH_CONFIG = "access.directory.processed.path";
+  public static final String ACCESS_DIRECTORY_PROCESSED_PATH_DOC =
+          "File system directory where MSAcess DB files will be "
+                  + "moved after processing."
+                  + "(for example, ``access.directory.processed.path: " +
+                  "\"/Users/username/Documents/accessdbs/processed\"``).";
+  public static final String ACCESS_DIRECTORY_PROCESSED_PATH_DISPLAY = "Access Directory Processed Path";
+  public static final String ACCESS_DIRECTORY_PROCESSED_PATH_DEFAULT = "";
   private static Pattern INVALID_CHARS = Pattern.compile("[^a-zA-Z0-9._-]");
 
   public static final String CONNECTION_PREFIX = "connection.";
@@ -147,7 +163,7 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
 
   public static final String DIALECT_NAME_CONFIG = "dialect.name";
   private static final String DIALECT_NAME_DISPLAY = "Database Dialect";
-  public static final String DIALECT_NAME_DEFAULT = "";
+  public static final String DIALECT_NAME_DEFAULT = "GenericDatabaseDialect";
   private static final String DIALECT_NAME_DOC =
       "The name of the database dialect that should be used for this connector. By default this "
       + "is empty, and the connector automatically determines the dialect based upon the "
@@ -385,7 +401,7 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
     config.configValues().stream()
             .filter((configValue) ->
                     configValue.name().equals(
-                            JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
+                            AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG
                     )
             ).forEach(configValue -> configValues.putIfAbsent(configValue.name(), configValue));
 
@@ -395,7 +411,7 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
             );
     if (transactionIsolationMode == TransactionIsolationMode.SQL_SERVER_SNAPSHOT) {
       DatabaseDialect dialect;
-      final String dialectName = this.getString(JdbcSourceConnectorConfig.DIALECT_NAME_CONFIG);
+      final String dialectName = this.getString(AccessSourceConnectorConfig.DIALECT_NAME_CONFIG);
       if (dialectName != null && !dialectName.trim().isEmpty()) {
         dialect = DatabaseDialects.create(dialectName, this);
       } else {
@@ -408,7 +424,7 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
       )
       ) {
         configValues
-                .get(JdbcSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG)
+                .get(AccessSourceConnectorConfig.TRANSACTION_ISOLATION_MODE_CONFIG)
                 .addErrorMessage("Isolation mode of `"
                         + TransactionIsolationMode.SQL_SERVER_SNAPSHOT.name()
                         + "` can only be configured with a Sql Server Dialect"
@@ -493,6 +509,26 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
         ++orderInGroup,
         Width.LONG,
         TABLE_BLACKLIST_DISPLAY
+    ).define(
+            ACCESS_DIRECTORY_UNPROCESSED_PATH_CONFIG,
+            Type.STRING,
+            ACCESS_DIRECTORY_UNPROCESSED_PATH_DEFAULT,
+            Importance.HIGH,
+            DATABASE_GROUP,
+            ACCESS_DIRECTORY_UNPROCESSED_PATH_DOC,
+            ++orderInGroup,
+            Width.LONG,
+            ACCESS_DIRECTORY_UNPROCESSED_PATH_DISPLAY
+    ).define(
+            ACCESS_DIRECTORY_PROCESSED_PATH_CONFIG,
+            Type.STRING,
+            ACCESS_DIRECTORY_PROCESSED_PATH_DEFAULT,
+            Importance.HIGH,
+            DATABASE_GROUP,
+            ACCESS_DIRECTORY_PROCESSED_PATH_DOC,
+            ++orderInGroup,
+            Width.LONG,
+            ACCESS_DIRECTORY_PROCESSED_PATH_DISPLAY
     ).define(
         CATALOG_PATTERN_CONFIG,
         Type.STRING,
@@ -787,12 +823,12 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
 
   public static final ConfigDef CONFIG_DEF = baseConfigDef();
 
-  public JdbcSourceConnectorConfig(Map<String, ?> props) {
+  public AccessSourceConnectorConfig(Map<String, ?> props) {
     super(CONFIG_DEF, props);
   }
 
   public String topicPrefix() {
-    return getString(JdbcSourceTaskConfig.TOPIC_PREFIX_CONFIG).trim();
+    return getString(AccessSourceTaskConfig.TOPIC_PREFIX_CONFIG).trim();
   }
 
   /**
@@ -908,13 +944,13 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
       return reverse.get(prop.toLowerCase(Locale.ROOT));
     }
 
-    public static NumericMapping get(JdbcSourceConnectorConfig config) {
-      String newMappingConfig = config.getString(JdbcSourceConnectorConfig.NUMERIC_MAPPING_CONFIG);
+    public static NumericMapping get(AccessSourceConnectorConfig config) {
+      String newMappingConfig = config.getString(AccessSourceConnectorConfig.NUMERIC_MAPPING_CONFIG);
       // We use 'null' as default to be able to check the old config if the new one is unset.
       if (newMappingConfig != null) {
-        return get(config.getString(JdbcSourceConnectorConfig.NUMERIC_MAPPING_CONFIG));
+        return get(config.getString(AccessSourceConnectorConfig.NUMERIC_MAPPING_CONFIG));
       }
-      if (config.getBoolean(JdbcSourceTaskConfig.NUMERIC_PRECISION_MAPPING_CONFIG)) {
+      if (config.getBoolean(AccessSourceTaskConfig.NUMERIC_PRECISION_MAPPING_CONFIG)) {
         return NumericMapping.PRECISION_ONLY;
       }
       return NumericMapping.NONE;
@@ -964,7 +1000,7 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
       }
     }
 
-    public static TimestampGranularity get(JdbcSourceConnectorConfig config) {
+    public static TimestampGranularity get(AccessSourceConnectorConfig config) {
       String tsGranularity = config.getString(TIMESTAMP_GRANULARITY_CONFIG);
       return reverse.get(tsGranularity.toLowerCase(Locale.ROOT));
     }
@@ -1001,7 +1037,7 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
   }
 
 
-  protected JdbcSourceConnectorConfig(ConfigDef subclassConfigDef, Map<String, String> props) {
+  protected AccessSourceConnectorConfig(ConfigDef subclassConfigDef, Map<String, String> props) {
     super(subclassConfigDef, props);
   }
 
@@ -1010,7 +1046,7 @@ public class JdbcSourceConnectorConfig extends AbstractConfig {
   }
 
   public TimeZone timeZone() {
-    String dbTimeZone = getString(JdbcSourceTaskConfig.DB_TIMEZONE_CONFIG);
+    String dbTimeZone = getString(AccessSourceTaskConfig.DB_TIMEZONE_CONFIG);
     return TimeZone.getTimeZone(ZoneId.of(dbTimeZone));
   }
 
