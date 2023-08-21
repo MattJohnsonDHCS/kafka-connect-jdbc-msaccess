@@ -108,6 +108,7 @@ public class GenericDatabaseDialect implements DatabaseDialect {
   protected static final int NUMERIC_TYPE_SCALE_LOW = -84;
   protected static final int NUMERIC_TYPE_SCALE_HIGH = 127;
   protected static final int NUMERIC_TYPE_SCALE_UNSET = -127;
+  protected static final String[] ILLEGAL_COLUMN_CHARACTERS = {"-"," ","/","(",")","$"};
 
   // The maximum precision that can be achieved in a signed 64-bit integer is 2^63 ~= 9.223372e+18
   private static final int MAX_INTEGER_TYPE_PRECISION = 18;
@@ -753,9 +754,27 @@ public class GenericDatabaseDialect implements DatabaseDialect {
     Map<ColumnId, ColumnDefinition> result = new LinkedHashMap<>();
     for (int i = 1; i <= rsMetadata.getColumnCount(); ++i) {
       ColumnDefinition defn = describeColumn(rsMetadata, i);
-      result.put(defn.id(), defn);
-    }
+      ColumnId transformedColumnId = new ColumnId(defn.id().tableId(),transformColumnName(defn.id().name()));
+      ColumnDefinition transformedDef = new ColumnDefinition(transformedColumnId, defn.type(), defn.typeName(),
+              defn.classNameForType(), defn.nullability(), defn.mutability(), defn.precision(), defn.scale(),
+              defn.isSignedNumber(), defn.displaySize(), defn.isAutoIncrement(), defn.isCaseSensitive(),
+              defn.isSearchable(), defn.isCurrency(), defn.isPrimaryKey());
+      result.put(transformedDef.id(), transformedDef);    }
     return result;
+  }
+
+  private String transformColumnName(String input) {
+    for ( String illegalCharacter : ILLEGAL_COLUMN_CHARACTERS) {
+      input = input.replace(illegalCharacter, "_");
+    }
+    if(Character.isDigit(input.charAt(0))) {
+      for (int i = 0; i < input.length(); i++) {
+        if (Character.isLetter(input.charAt(i))) {
+          return input.substring(i) + "_" + input.substring(0, i);
+        }
+      }
+    }
+    return input;
   }
 
   /**

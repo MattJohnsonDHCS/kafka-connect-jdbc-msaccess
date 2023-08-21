@@ -122,11 +122,6 @@ public class AccessSourceTask extends SourceTask {
       Connection connection;
 
       try {
-        Class.forName("net.ucanaccess.jdbc.UcanaccessDriver");
-      } catch (ClassNotFoundException e) {
-        throw new RuntimeException(e);
-      }
-      try {
         String jdbcUrl = "jdbc:ucanaccess://" + file.getAbsolutePath();
         log.info("Jdbc URL is: {}", jdbcUrl);
 
@@ -135,6 +130,7 @@ public class AccessSourceTask extends SourceTask {
         config = new AccessSourceTaskConfig(props);
 
         connection = DriverManager.getConnection(jdbcUrl);
+        connection.setAutoCommit(false);
         DatabaseMetaData md = connection.getMetaData();
         ResultSet rs = md.getTables(null, null, "%", null);
         while (rs.next()) {
@@ -149,17 +145,6 @@ public class AccessSourceTask extends SourceTask {
         }
         log.info("Using JDBC dialect {}", dialect.name());
 
-        dialect.setConnectionIsolationMode(
-                connection,
-                TransactionIsolationMode
-                        .valueOf(
-                                config.getString(
-                                        AccessSourceConnectorConfig
-                                                .TRANSACTION_ISOLATION_MODE_CONFIG
-                                )
-                        )
-        );
-
       } catch (SQLException e) {
         throw new RuntimeException(e);
       }
@@ -171,33 +156,19 @@ public class AccessSourceTask extends SourceTask {
                         TableQuerier.QueryMode.TABLE,
                         table,
                         config.getString(AccessSourceConnectorConfig.TOPIC_PREFIX_CONFIG)
-                                + "_" + getFileNameWithoutExtension(file),
+                                + "_" + getFileNameWithoutExtension(file).replace(" ", "_") + "_",
                         ""
                 )
         );
-
       }
 
       for (TableQuerier querier : tableQuerierList) {
-
-        if (!querier.querying()) {
-          // If not in the middle of an update, wait for next update time
-          final long nextUpdate = querier.getLastUpdate()
-                  + config.getInt(AccessSourceTaskConfig.POLL_INTERVAL_MS_CONFIG);
-          final long now = time.milliseconds();
-          final long sleepMs = Math.min(nextUpdate - now, 100);
-
-          if (sleepMs > 0) {
-            log.info("Waiting {} ms to poll {} next", nextUpdate - now, querier.toString());
-            time.sleep(sleepMs);
-            continue; // Re-check stop flag before continuing
-          }
-        }
-
         try {
           log.info("Checking for next block of results from {}", querier.toString());
           querier.maybeStartQuery(connection);
-          results.add(querier.extractRecord());
+          while(querier.resultSet.next()) {
+            results.add(querier.extractRecord());
+          }
         } catch (SQLNonTransientException sqle) {
           log.error("Non-transient SQL exception while running query "
                          + "for table: {} from database: {}",
@@ -211,7 +182,6 @@ public class AccessSourceTask extends SourceTask {
                   getFileNameWithoutExtension(file),
                   sqle
           );
-          return null;
         } catch (Throwable t) {
           log.error("Failed to run query for table: {}", querier, t);
           closeResources(connection, getFileNameWithoutExtension(file));
@@ -237,6 +207,7 @@ public class AccessSourceTask extends SourceTask {
     log.info("Closing db connection for file {}", fileName);
     try {
       if (connection != null) {
+        connection.setAutoCommit(true);
         connection.close();
       }
     } catch (Throwable t) {
@@ -248,6 +219,7 @@ public class AccessSourceTask extends SourceTask {
     log.info("Closing db connection");
     try {
       if (connection != null) {
+        connection.setAutoCommit(true);
         connection.close();
       }
     } catch (Throwable t) {
